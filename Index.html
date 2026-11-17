@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="color-scheme" content="dark">
+  <style>
+    :root {
+      color-scheme: dark;
+      --text-scale: 1;
+      --bg: #171a20;
+      --surface: #222731;
+      --surface-2: #292f3a;
+      --surface-3: #464B7D;
+      --search-bg: #151920;
+      --filter-bg: #1b2028;
+      --card-bg: #7A7D9D;
+      --card-text: #000000;
+      --border: #3b4350;
+      --text: #f1f3f6;
+      --muted: #b5bdc9;
+      --accent: #a9c7f5;
+      --accent-ink: #15243b;
+      --accent-hover: #c4d9fa;
+      --focus: #f6d77a;
+      --danger: #ffb4ab;
+      --radius: 12px;
+    }
+
+    :root[data-theme="light"] {
+      color-scheme: light;
+      --bg: #f4f6fa;
+      --surface: #ffffff;
+      --surface-2: #e9eef6;
+      --surface-3: #dfe6f2;
+      --search-bg: #ffffff;
+      --filter-bg: #ffffff;
+      --card-bg: #eef2f8;
+      --card-text: #151922;
+      --border: #9aa6b5;
+      --text: #151922;
+      --muted: #4e5968;
+      --accent: #1457a6;
+      --accent-ink: #ffffff;
+      --accent-hover: #0d3f7a;
+      --focus: #a85f00;
+      --danger: #a40000;
+    }
+
+    :root[data-theme="high-contrast"] {
+      color-scheme: dark;
+      --bg: #000000;
+      --surface: #000000;
+      --surface-2: #000000;
+      --surface-3: #000000;
+      --search-bg: #000000;
+      --filter-bg: #000000;
+      --card-bg: #000000;
+      --card-text: #ffffff;
+      --border: #ffffff;
+      --text: #ffffff;
+      --muted: #ffff00;
+      --accent: #ffff00;
+      --accent-ink: #000000;
+      --accent-hover: #ffffff;
+      --focus: #00ffff;
+      --danger: #ff8080;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: calc(16px * var(--text-scale));
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 1rem/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      top: 0 !important;
+    }
+
+    a {
+      color: var(--accent);
+      text-underline-offset: 3px;
+      overflow-wrap: anywhere;
+    }
+
+    a:hover {
+      color: var(--accent-hover);
+    }
+
+    :root[data-theme="high-contrast"] a:hover,
+    :root[data-theme="light"] a:hover {
+      color: var(--accent-hover);
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button,
+    select,
+    input[type="search"] {
+      min-height: 44px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--surface-2);
+      color: var(--text);
+      padding: 9px 12px;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    button:hover {
+      border-color: var(--accent);
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    summary:focus-visible,
+    a:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 3px;
+    }
+
+    .page {
+      width: min(100% - 32px, 980px);
+      margin: 0 auto;
+      padding: 34px 0 64px;
+    }
+
+    header {
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      margin: 0 0 7px;
+      font-size: clamp(1.65rem, 4vw, 2.25rem);
+      line-height: 1.2;
+      letter-spacing: -.025em;
+    }
+
+    .intro {
+      margin: 0;
+      color: var(--muted);
+      max-width: 68ch;
+    }
+
+    .panel {
+      background: var(--surface-3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+    }
+
+    .map-panel {
+      margin: 18px 0 12px;
+      padding: 16px;
+    }
+
+    .map-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .map-header h2 {
+      margin: 0;
+      font-size: 1.05rem;
+    }
+
+    #map {
+      width: 100%;
+      height: 360px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      background: #101821;
+    }
+
+    .controls {
+      display: grid;
+      gap: 15px;
+    }
+
+    .search-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+    }
+
+    .search-wrap label,
+    .sort-wrap label {
+      display: block;
+      font-weight: 650;
+      margin-bottom: 6px;
+    }
+
+    input[type="search"] {
+      width: 100%;
+      background: var(--search-bg);
+    }
+
+    .filters-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .filters-heading h2 {
+      margin: 0;
+      font-size: 1.05rem;
+    }
+
+    .text-button {
+      background: transparent;
+      border-color: transparent;
+      color: var(--accent);
+      padding-inline: 8px;
+    }
+
+    .filter-groups {
+      display: grid;
+      grid-template-columns: 1.3fr 1.3fr .8fr;
+      gap: 10px;
+    }
+
+    details.filter-group {
+      min-width: 0;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--filter-bg);
+    }
+
+    details.filter-group>summary {
+      cursor: pointer;
+      list-style: none;
+      padding: 12px 13px;
+      font-weight: 650;
+    }
+
+    details.filter-group>summary::-webkit-details-marker {
+      display: none;
+    }
+
+    details.filter-group>summary::after {
+      content: "+";
+      float: right;
+      color: var(--muted);
+      font-size: 1.15rem;
+      line-height: 1.2;
+    }
+
+    details.filter-group[open]>summary::after {
+      content: "−";
+    }
+
+    .filter-options {
+      padding: 0 13px 13px;
+      display: grid;
+      gap: 9px;
+    }
+
+    .check {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      color: var(--text);
+      line-height: 1.35;
+      cursor: pointer;
+    }
+
+    .check input {
+      width: 19px;
+      height: 19px;
+      flex: 0 0 auto;
+      margin: 1px 0 0;
+      accent-color: var(--accent);
+    }
+
+    .primary {
+      background: var(--accent);
+      color: var(--accent-ink);
+      border-color: var(--accent);
+      font-weight: 700;
+    }
+
+    .primary:hover {
+      background: #c4d9fa;
+      color: #101e32;
+    }
+
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin: 22px 2px 12px;
+      color: var(--muted);
+      font-size: .94rem;
+    }
+
+    #resultsCount {
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .cards {
+      display: grid;
+      gap: 12px;
+    }
+
+    .resource-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: clip;
+      color: var(--card-text);
+    }
+
+    .resource-card[open] {
+      border-color: var(--accent);
+    }
+
+    .resource-card>summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 17px 18px;
+      color: var(--card-text);
+    }
+
+    .resource-card>summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .resource-name {
+      flex: 1 1 auto;
+      min-width: 0;
+      font-size: 1.08rem;
+      font-weight: 750;
+      line-height: 1.35;
+      color: var(--card-text);
+    }
+
+    .chevron {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 1.5em;
+      width: 1.5em;
+      height: 1.5em;
+      margin-top: -0.08em;
+      font-size: 1.15rem;
+      line-height: 1;
+      color: var(--card-text);
+      transition: transform .15s ease;
+    }
+
+    .resource-card[open] .chevron {
+      transform: rotate(180deg);
+    }
+
+    .card-type {
+      color: var(--card-text);
+      margin-top: 5px;
+      font-size: .94rem;
+    }
+
+    .card-time {
+      margin-top: 7px;
+      color: var(--card-text);
+    }
+
+    .context-detail {
+      margin-top: 8px;
+      color: var(--card-text);
+      font-size: .94rem;
+    }
+
+    .card-body {
+      border-top: 1px solid var(--border);
+      padding: 15px 18px 18px;
+      display: grid;
+      gap: 13px;
+      color: var(--card-text);
+    }
+
+    .field-label {
+      color: var(--card-text);
+      font-size: .82rem;
+      font-weight: 750;
+      letter-spacing: .035em;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    .field-value {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      color: var(--card-text);
+    }
+
+    .verification-note {
+      border-top: 1px solid var(--border);
+      padding-top: 12px;
+      margin-top: 2px;
+      color: var(--card-text);
+      font-size: .88rem;
+      font-weight: 650;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 35px 18px;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+    }
+
+    .error {
+      color: var(--danger);
+    }
+
+    .loading {
+      color: var(--muted);
+      padding: 24px 4px;
+    }
+
+    .footer-note {
+      color: var(--muted);
+      font-size: .85rem;
+      margin-top: 22px;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .accessibility-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0;
+      padding: 12px 14px 14px;
+      background: var(--surface);
+      border: 0;
+      border-top: 1px solid var(--border);
+      border-radius: 0 0 var(--radius) var(--radius);
+    }
+
+    .accessibility-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .accessibility-toolbar .toolbar-label {
+      width: 100%;
+      font-weight: 750;
+      margin: 0 0 2px;
+    }
+
+    .theme-button[aria-pressed="true"] {
+      background: var(--accent);
+      color: var(--accent-ink);
+      border-color: var(--accent);
+      font-weight: 750;
+    }
+
+    .text-size-status {
+      min-width: 5.5rem;
+      text-align: center;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .accessibility-toolbar button:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
+    .accessibility-expander {
+      margin: 0 0 18px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    .accessibility-expander>summary {
+      cursor: pointer;
+      list-style: none;
+      padding: 13px 14px;
+      font-size: 1.02rem;
+      font-weight: 750;
+    }
+
+    .accessibility-expander>summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .accessibility-expander>summary::after {
+      content: "+";
+      float: right;
+      color: var(--muted);
+      font-size: 1.15rem;
+      line-height: 1.2;
+    }
+
+    .accessibility-expander[open]>summary::after {
+      content: "−";
+    }
+
+    .language-button[aria-pressed="true"] {
+      background: var(--accent);
+      color: var(--accent-ink);
+      border-color: var(--accent);
+      font-weight: 750;
+    }
+
+    #googleTranslateContainer {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .goog-te-banner-frame,
+    .goog-te-balloon-frame {
+      display: none !important;
+    }
+
+    @media (max-width: 720px) {
+      .page {
+        width: min(100% - 22px, 640px);
+        padding-top: 23px;
+      }
+
+      .panel {
+        padding: 13px;
+      }
+
+      .filter-groups {
+        grid-template-columns: 1fr;
+      }
+
+      .filter-options {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      details.filter-group:nth-child(2) .filter-options {
+        grid-template-columns: 1fr;
+      }
+
+      .search-row {
+        grid-template-columns: 1fr;
+      }
+
+      .search-row button {
+        width: 100%;
+      }
+
+      #map {
+        height: 300px;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .filter-options {
+        grid-template-columns: 1fr;
+      }
+
+      .resource-card>summary {
+        padding: 15px;
+      }
+
+      .card-body {
+        padding: 14px 15px 16px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition: none !important;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+</head>
+
+<body>
+  <main class="page">
+    <details class="accessibility-expander">
+      <summary>Accessibility Features</summary>
+      <section class="accessibility-toolbar" aria-label="Display and language accessibility settings">
+        <div class="accessibility-group" role="group" aria-labelledby="themeLabel">
+          <span class="toolbar-label" id="themeLabel">Display mode</span>
+          <button class="theme-button" type="button" data-theme-option="dark" aria-pressed="true">Dark</button>
+          <button class="theme-button" type="button" data-theme-option="light" aria-pressed="false">Light</button>
+          <button class="theme-button" type="button" data-theme-option="high-contrast" aria-pressed="false">High
+            Contrast</button>
+        </div>
+
+        <div class="accessibility-group" role="group" aria-labelledby="textSizeLabel">
+          <span class="toolbar-label" id="textSizeLabel">Text size</span>
+          <button id="decreaseTextButton" type="button" aria-label="Decrease text size">A−</button>
+          <button id="resetTextButton" type="button" aria-label="Reset text size to default">Reset</button>
+          <button id="increaseTextButton" type="button" aria-label="Increase text size">A+</button>
+          <span id="textSizeStatus" class="text-size-status" aria-live="polite">Default</span>
+        </div>
+
+        <div class="accessibility-group" role="group" aria-labelledby="languageLabel">
+          <span class="toolbar-label" id="languageLabel">Language</span>
+          <button class="language-button" type="button" data-language="en" aria-pressed="true">English</button>
+          <button class="language-button" type="button" data-language="es" aria-pressed="false">Español</button>
+          <span id="googleTranslateContainer" aria-hidden="true"></span>
+        </div>
+      </section>
+    </details>
+    <header>
+      <h1>Wichita Food Resource Directory</h1>
+      <p class="intro">Find food assistance and other community resources in the Wichita area <br> (no ID or proof of
+        address required) <br><br> Use search and filters to narrow the list, then open a resource for details.</p>
+    </header>
+
+    <section class="panel controls" aria-label="Search and filter resources">
+      <div class="search-row">
+        <div class="search-wrap">
+          <label for="searchInput">Search resources</label>
+          <input id="searchInput" type="search" placeholder="Search names, services, locations, requirements…"
+            autocomplete="off">
+        </div>
+        <button id="clearButton" type="button">Clear search & filters</button>
+      </div>
+
+      <div class="filters-heading">
+        <h2>Filter resources</h2>
+        <button id="clearFiltersButton" class="text-button" type="button">Clear filters</button>
+      </div>
+
+      <div class="filter-groups">
+        <details class="filter-group">
+          <summary>Products &amp; services</summary>
+          <div class="filter-options" id="productFilters">
+            <label class="check"><input type="checkbox" value="foodPantry">Food Pantry</label>
+            <label class="check"><input type="checkbox" value="freshProduce">Fresh Produce</label>
+            <label class="check"><input type="checkbox" value="preparedMeals">Prepared Meals</label>
+            <label class="check"><input type="checkbox" value="emergency">Emergency Services</label>
+            <label class="check"><input type="checkbox" value="socialServices">Social Services</label>
+            <label class="check"><input type="checkbox" value="clothing">Clothing</label>
+            <label class="check"><input type="checkbox" value="hygiene">Hygiene Products</label>
+          </div>
+        </details>
+
+        <details class="filter-group">
+          <summary>Accessibility</summary>
+          <div class="filter-options" id="accessFilters">
+            <label class="check"><input type="checkbox" value="wheelchair">Wheelchair-accessible entrance and
+              parking</label>
+            <label class="check"><input type="checkbox" value="interpreter">Interpreter/translation services</label>
+            <label class="check"><input type="checkbox" value="curbside">Drive-through/curbside pick-up</label>
+          </div>
+        </details>
+
+        <details class="filter-group">
+          <summary>Area</summary>
+          <div class="filter-options" id="areaFilters">
+            <label class="check"><input type="checkbox" value="NE"><span data-area-code="NE" class="notranslate"
+                translate="no">NE</span></label>
+            <label class="check"><input type="checkbox" value="NW"><span data-area-code="NW" class="notranslate"
+                translate="no">NW</span></label>
+            <label class="check"><input type="checkbox" value="SE"><span data-area-code="SE" class="notranslate"
+                translate="no">SE</span></label>
+            <label class="check"><input type="checkbox" value="SW"><span data-area-code="SW" class="notranslate"
+                translate="no">SW</span></label>
+            <label class="check"><input type="checkbox" value="Central"><span data-area-code="Central"
+                class="notranslate" translate="no">Central</span></label>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section class="panel map-panel" aria-label="Map of filtered resources">
+      <div class="map-header">
+        <h2>Resource map</h2>
+        <span id="geocodeStatus" aria-live="polite" style="color:var(--muted);font-size:.85rem;"></span>
+      </div>
+      <div id="map" aria-label="Map showing matching resources"></div>
+    </section>
+
+    <div class="meta-row" aria-live="polite" aria-atomic="true">
+      <div><span id="resultsCount">Loading…</span> <span id="resultsWord">resources</span></div>
+      <div id="updatedLabel"></div>
+    </div>
+    <section id="results" class="cards" aria-label="Food and community resources">
+      <div class="loading">Loading resources…</div>
+    </section>
+    <p class="footer-note">Information is provided as a directory. Availability, hours, eligibility, and access
+      arrangements can change; contact the organization to confirm before visiting.</p>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script>
+    const SHEET_ID = '1mkEp1bDZ2XYpyJ5y3vHoRetm23aH-uWjcmmomz1ctJ0';
+
+    const PRODUCT_RULES = {
+      foodPantry: /pantry|food\s*bank/i,
+      freshProduce: /fresh|produce/i,
+      preparedMeals: /dinner|lunch|breakfast|meal/i,
+      emergency: /emergency/i,
+      socialServices: /social\s+services/i,
+      clothing: /clothing/i,
+      hygiene: /hygiene/i
+    };
+    const ACCESS_RULES = {
+      wheelchair: /wheelchair[- ]accessible/i,
+      interpreter: /interpreter|translation services|phone interpretation/i,
+      curbside: /drive[- ]through|curbside/i
+    };
+    const AREA_NAMES = ['NE', 'NW', 'SE', 'SW', 'Central'];
+    const MAP_CENTER = [37.6872, -97.3301];
+    let allResources = [];
+    let columns = [];
+    let map;
+    let mapMarkers = [];
+    let selectedResourceId = null;
+    const GEOCODE_CACHE = new Map();
+
+    const $ = id => document.getElementById(id);
+    const clean = value => String(value == null ? '' : value).trim();
+
+    function isUsableCoordinate(rawValue, axis) {
+      const value = Number(rawValue);
+      if (!Number.isFinite(value)) return false;
+      if (axis === 'latitude' && (value < -90 || value > 90)) return false;
+      if (axis === 'longitude' && (value < -180 || value > 180)) return false;
+      if (value === 0) return false;
+      return true;
+    }
+
+    function normalizeCoordinate(rawValue) {
+      const text = clean(rawValue);
+      if (!text) return null;
+      const value = Number(text);
+      if (!Number.isFinite(value)) return null;
+      if (value === 0) return null;
+      return value;
+    }
+
+    function hasValidCoordinate(resource) {
+      if (!resource) return false;
+      const latitude = normalizeCoordinate(resource.latitude);
+      const longitude = normalizeCoordinate(resource.longitude);
+      return latitude !== null && longitude !== null &&
+        Number.isFinite(latitude) && Number.isFinite(longitude) &&
+        latitude >= -90 && latitude <= 90 && longitude >= -180 && longitude <= 180;
+    }
+
+    function buildGeocodeQuery(resource) {
+      const location = clean(resource.Location);
+      const area = clean(resource.Area);
+      return [location || clean(resource['Name of Resource']),
+      area && area !== 'All Wichita areas' && area !== 'Multiple areas' ? area : '',
+        'Wichita', 'Kansas'].filter(Boolean).join(', ');
+    }
+
+    async function geocodeAndSaveResource(resource) {
+      return hasValidCoordinate(resource);
+    }
+
+    let geocodeQueueStarted = false;
+
+    async function geocodeMissingResources() {
+      const status = $('geocodeStatus');
+      if (status) status.textContent = 'Loading sheet locations';
+      renderMap(getFilteredResources().filtered);
+      if (status) status.textContent = 'Coordinates ready';
+    }
+
+    function initialize(data) {
+      console.info('[Map diagnostics] initialize started', {
+        resourceCount: (data.resources || []).length,
+        sheetName: data.sheetName
+      });
+      allResources = (data.resources || []).map(resource => {
+        const latitude = normalizeCoordinate(resource.latitude);
+        const longitude = normalizeCoordinate(resource.longitude);
+        return {
+          ...resource,
+          latitude: latitude,
+          longitude: longitude
+        };
+      });
+      columns = data.columns || [];
+      $('updatedLabel').textContent = allResources.length ? '' : '';
+      initializeMap();
+      render();
+
+      const status = $('geocodeStatus');
+      if (status) status.textContent = 'Map ready — checking locations';
+      window.testResourceGeocoding = () => geocodeMissingResources();
+      console.info('[Map diagnostics] all data loaded', allResources.slice(0, 3).map(resource => ({
+        name: resource['Name of Resource'],
+        location: resource.Location,
+        latitude: resource.latitude,
+        longitude: resource.longitude
+      })));
+    }
+
+    function initializeMap() {
+      if (typeof L === 'undefined') return;
+      if (map) return;
+      map = L.map('map', { zoomControl: true, scrollWheelZoom: true, preferCanvas: true });
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+      map.setView(MAP_CENTER, 11);
+    }
+
+    function selectedValues(containerId) {
+      return Array.from($(containerId).querySelectorAll('input[type="checkbox"]:checked')).map(input => input.value);
+    }
+
+    function matchesProduct(resource, selected) {
+      if (!selected.length) return true;
+      const text = clean(resource['Available products or services']);
+      return selected.some(key => PRODUCT_RULES[key].test(text));
+    }
+
+    function matchesAccess(resource, selected) {
+      if (!selected.length) return true;
+      const text = clean(resource.Accessibility);
+      return selected.some(key => ACCESS_RULES[key].test(text));
+    }
+
+    function matchesArea(resource, selected) {
+      if (!selected.length) return true;
+      const area = clean(resource.Area).toLowerCase();
+      if (area === 'all wichita areas' || area === 'multiple areas') return true;
+      return selected.some(value => area === value.toLowerCase());
+    }
+
+    function getFilteredResources() {
+      const query = clean($('searchInput').value).toLocaleLowerCase();
+      const product = selectedValues('productFilters');
+      const access = selectedValues('accessFilters');
+      const areas = selectedValues('areaFilters');
+
+      const filtered = allResources.filter(resource => {
+        const searchMatch = !query || columns.some(column => clean(resource[column]).toLocaleLowerCase().includes(query));
+        return searchMatch && matchesProduct(resource, product) && matchesAccess(resource, access) && matchesArea(resource, areas);
+      });
+
+      return { filtered, product, access, areas };
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+    }
+
+    function safeUrl(value) {
+      let url = clean(value);
+      if (!url) return '';
+      if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+      try {
+        const parsed = new URL(url);
+        return (parsed.protocol === 'http:' || parsed.protocol === 'https:') ? parsed.href : '';
+      } catch (e) { return ''; }
+    }
+
+    function phoneLink(value) {
+      const phone = clean(value);
+      if (!phone) return escapeHtml(phone);
+      const tel = phone.replace(/[^\d+]/g, '');
+      return '<a href="tel:' + escapeHtml(tel) + '">' + escapeHtml(phone) + '</a>';
+    }
+
+    function fieldHtml(label, value, type) {
+      const text = clean(value);
+      if (!text) return '';
+      let rendered = escapeHtml(text);
+      if (type === 'phone') rendered = phoneLink(text);
+      if (type === 'location') {
+        const urlMatch = text.match(/https?:\/\/[^\s,]+/i);
+        if (urlMatch && /google\.com\/maps\/d\//i.test(urlMatch[0])) {
+          const href = safeUrl(urlMatch[0]);
+          if (href) {
+            const beforeUrl = text.slice(0, urlMatch.index).trimEnd().replace(/[;:]\s*$/, '');
+            const afterUrl = text.slice(urlMatch.index + urlMatch[0].length);
+            rendered = escapeHtml(beforeUrl) +
+              (beforeUrl ? ' ' : '') +
+              '<a href="' + escapeHtml(href) + '" target="_blank" rel="noopener noreferrer">View the City of Wichita blessing-box map <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a>' +
+              escapeHtml(afterUrl);
+          }
+        }
+      }
+      if (type === 'url') {
+        const href = safeUrl(text);
+        rendered = href ? '<a href="' + escapeHtml(href) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(text) + ' <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a>' : escapeHtml(text);
+      }
+      return '<div class="field"><div class="field-label">' + escapeHtml(label) + '</div><div class="field-value">' + rendered + '</div></div>';
+    }
+
+    function cardHtml(resource, context) {
+      const name = clean(resource['Name of Resource']);
+      const area = clean(resource.Area);
+      const language = readStoredValue(LANGUAGE_STORAGE_KEY) || 'en';
+      const headingName = '<span class="notranslate" translate="no">' + escapeHtml(name) + '</span>';
+      const headingArea = area
+        ? '<span class="notranslate" translate="no">' + escapeHtml(displayAreaName(area, language)) + '</span>'
+        : '';
+      const heading = headingArea ? headingName + ' — ' + headingArea : headingName;
+      let summary = '<div class="card-top"><div class="resource-name">' + heading + '</div><span class="chevron" aria-hidden="true">⌄</span></div>';
+      if (clean(resource['Resource type'])) summary += '<div class="card-type">' + escapeHtml(resource['Resource type']) + '</div>';
+      if (clean(resource['Available times'])) summary += '<div class="card-time">' + escapeHtml(resource['Available times']) + '</div>';
+
+      if (context.product.length && clean(resource['Available products or services'])) {
+        summary += '<div class="context-detail"><strong>Available products or services:</strong> ' + escapeHtml(resource['Available products or services']) + '</div>';
+      }
+      if (context.access.length && clean(resource.Accessibility)) {
+        summary += '<div class="context-detail"><strong>Accessibility:</strong> ' + escapeHtml(resource.Accessibility) + '</div>';
+      }
+
+      const location = [clean(resource.Location), clean(resource['Location notes'])].filter(Boolean).join(', ');
+
+      const details = [
+        fieldHtml('Available products or services', resource['Available products or services']),
+        fieldHtml('Location', location, 'location'),
+        fieldHtml('Phone', resource.Phone, 'phone'),
+        fieldHtml('Website/URL', resource['Website/URL'], 'url'),
+        fieldHtml('Required documentation', resource['Required documentation']),
+        fieldHtml('Restrictions', resource.Restrictions),
+        fieldHtml('Accessibility', resource.Accessibility)
+      ].filter(Boolean).join('');
+
+      const verifiedDate = clean(resource['Whole Resource Verified Date']);
+      const verificationNote = verifiedDate
+        ? 'This resource was last verified as accurate on ' + escapeHtml(verifiedDate)
+        : "This entry's accuracy has not yet been verified";
+
+      return '<details class="resource-card" id="resource-' + escapeHtml(resource._id) + '" ' + (selectedResourceId === resource._id ? 'open' : '') + '><summary>' + summary + '</summary><div class="card-body">' + details + '<div class="verification-note">' + verificationNote + '</div></div></details>';
+    }
+
+    function setSelectedResource(resourceId) {
+      selectedResourceId = resourceId;
+
+      document.querySelectorAll('.resource-card').forEach(card => {
+        if (card.id !== 'resource-' + resourceId) card.open = false;
+      });
+
+      const card = document.getElementById('resource-' + resourceId);
+      if (card) {
+        card.open = true;
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      updateMapSelection();
+    }
+
+    function updateMapSelection() {
+      if (!map) return;
+      mapMarkers.forEach(({ resourceId, marker }) => {
+        const isSelected = selectedResourceId === resourceId;
+        marker.setStyle({
+          radius: isSelected ? 10 : 7,
+          color: isSelected ? '#f6d77a' : '#a9c7f5',
+          fillColor: isSelected ? '#ffb4ab' : '#5f7bc0',
+          fillOpacity: 1,
+          weight: 2
+        });
+      });
+    }
+
+    function renderMap(resources) {
+      if (!map || typeof L === 'undefined') return;
+      if (mapMarkers.length) {
+        mapMarkers.forEach(({ marker }) => marker.remove());
+        mapMarkers = [];
+      }
+
+      const points = (resources || []).filter(resource => {
+        const lat = normalizeCoordinate(resource.latitude);
+        const lon = normalizeCoordinate(resource.longitude);
+        return lat !== null && lon !== null &&
+          Number.isFinite(lat) && Number.isFinite(lon) &&
+          lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
+      });
+
+      if (!points.length) {
+        map.setView(MAP_CENTER, 11);
+        return;
+      }
+
+      const markerLayer = L.layerGroup();
+      points.forEach(resource => {
+        const lat = Number(resource.latitude);
+        const lon = Number(resource.longitude);
+        const marker = L.circleMarker([lat, lon], {
+          radius: selectedResourceId === resource._id ? 10 : 7,
+          color: selectedResourceId === resource._id ? '#f6d77a' : '#a9c7f5',
+          fillColor: selectedResourceId === resource._id ? '#ffb4ab' : '#5f7bc0',
+          fillOpacity: 1,
+          weight: 2
+        });
+
+        const popupHtml = '<strong class="notranslate" translate="no">' + escapeHtml(clean(resource['Name of Resource'])) + '</strong><br>' + escapeHtml(clean(resource['Resource type']) || 'Community resource') + '<br>' + escapeHtml(clean(resource.Location) || 'Location not listed');
+        marker.bindPopup(popupHtml);
+        marker.on('click', () => setSelectedResource(resource._id));
+        marker.addTo(markerLayer);
+        mapMarkers.push({ resourceId: resource._id, marker });
+      });
+
+      markerLayer.addTo(map);
+      const bounds = L.latLngBounds(points.map(resource => [Number(resource.latitude), Number(resource.longitude)]));
+      map.fitBounds(bounds.pad(0.35), { maxZoom: 12 });
+      updateMapSelection();
+    }
+
+    async function render() {
+      if (!allResources.length) return;
+      const context = getFilteredResources();
+      const count = context.filtered.length;
+      $('resultsCount').textContent = String(count);
+      $('resultsWord').textContent = count === 1 ? 'resource' : 'resources';
+      $('results').innerHTML = count
+        ? context.filtered.map(resource => cardHtml(resource, context)).join('')
+        : '<div class="empty"><strong>No matching resources found.</strong><br>Try removing a filter or changing your search.</div>';
+      translateRenderedResults();
+      renderMap(context.filtered);
+      if (count) geocodeMissingResources();
+
+      if (selectedResourceId && !document.getElementById('resource-' + selectedResourceId)) {
+        selectedResourceId = null;
+      }
+    }
+
+    function clearFilters() {
+      document.querySelectorAll('.filter-options input[type="checkbox"]').forEach(input => { input.checked = false; });
+      render();
+    }
+
+    $('results').addEventListener('click', event => {
+      const card = event.target.closest('.resource-card');
+      if (!card || !event.target.closest('summary')) return;
+
+      const resourceId = card.id.replace('resource-', '');
+      const willClose = card.open;
+
+      if (willClose) {
+        document.querySelectorAll('.resource-card').forEach(otherCard => {
+          if (otherCard !== card) otherCard.open = false;
+        });
+        selectedResourceId = null;
+        updateMapSelection();
+        return;
+      }
+
+      document.querySelectorAll('.resource-card').forEach(otherCard => {
+        if (otherCard !== card) otherCard.open = false;
+      });
+      selectedResourceId = resourceId;
+      updateMapSelection();
+    });
+
+    $('results').addEventListener('toggle', event => {
+      const card = event.target.closest('.resource-card');
+      if (!card) return;
+
+      if (card.open) {
+        const resourceId = card.id.replace('resource-', '');
+        document.querySelectorAll('.resource-card').forEach(otherCard => {
+          if (otherCard !== card) otherCard.open = false;
+        });
+        selectedResourceId = resourceId;
+      } else if (selectedResourceId === card.id.replace('resource-', '')) {
+        selectedResourceId = null;
+      }
+      updateMapSelection();
+    }, true);
+
+    $('searchInput').addEventListener('input', render);
+    document.querySelectorAll('.filter-options input').forEach(input => input.addEventListener('change', render));
+    $('clearFiltersButton').addEventListener('click', clearFilters);
+    $('clearButton').addEventListener('click', () => { $('searchInput').value = ''; clearFilters(); $('searchInput').focus(); });
+
+    const THEME_STORAGE_KEY = 'wichitaDirectoryTheme';
+    const TEXT_SIZE_STORAGE_KEY = 'wichitaDirectoryTextScale';
+    const TEXT_SIZES = [0.875, 1, 1.125, 1.25];
+    const LANGUAGE_STORAGE_KEY = 'wichitaDirectoryLanguage';
+
+    function readStoredValue(key) {
+      try { return localStorage.getItem(key); } catch (error) { return null; }
+    }
+
+    function storeValue(key, value) {
+      try { localStorage.setItem(key, value); } catch (error) { /* Storage may be disabled. */ }
+    }
+
+    function applyTheme(theme) {
+      const validTheme = ['dark', 'light', 'high-contrast'].includes(theme) ? theme : 'dark';
+      document.documentElement.dataset.theme = validTheme;
+      document.querySelector('meta[name="color-scheme"]').setAttribute('content', validTheme === 'light' ? 'light' : 'dark');
+      document.querySelectorAll('[data-theme-option]').forEach(button => {
+        button.setAttribute('aria-pressed', String(button.dataset.themeOption === validTheme));
+      });
+      storeValue(THEME_STORAGE_KEY, validTheme);
+    }
+
+    function applyTextScale(scale) {
+      const index = TEXT_SIZES.indexOf(Number(scale));
+      const safeIndex = index === -1 ? 1 : index;
+      const labels = ['Small', 'Default', 'Large', 'Largest'];
+      document.documentElement.style.setProperty('--text-scale', String(TEXT_SIZES[safeIndex]));
+      $('textSizeStatus').textContent = labels[safeIndex];
+      $('decreaseTextButton').disabled = safeIndex === 0;
+      $('increaseTextButton').disabled = safeIndex === TEXT_SIZES.length - 1;
+      $('resetTextButton').disabled = safeIndex === 1;
+      storeValue(TEXT_SIZE_STORAGE_KEY, String(TEXT_SIZES[safeIndex]));
+    }
+
+    function currentTextScaleIndex() {
+      const scale = Number(readStoredValue(TEXT_SIZE_STORAGE_KEY));
+      const index = TEXT_SIZES.indexOf(scale);
+      return index === -1 ? 1 : index;
+    }
+
+    function clearGoogleTranslateCookies() {
+      const hostParts = location.hostname.split('.');
+      const domainOptions = [''];
+
+      for (let i = hostParts.length - 1; i >= 1; i--) {
+        const domain = hostParts.slice(i).join('.');
+        if (domain) {
+          domainOptions.push('domain=' + domain);
+          domainOptions.push('domain=.' + domain);
+        }
+      }
+
+      domainOptions.forEach(option => {
+        document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/;' + (option ? ' ' + option : '');
+      });
+    }
+
+    function setGoogleTranslateCookie(language) {
+      clearGoogleTranslateCookies();
+      if (language === 'es') {
+        document.cookie = 'googtrans=/en/es; path=/';
+      }
+    }
+
+    function setGoogleTranslateLanguage(language) {
+      const combo = document.querySelector('.goog-te-combo');
+      if (!combo) return false;
+      if (combo.value !== language) {
+        combo.value = language;
+      }
+      combo.dispatchEvent(new Event('change'));
+      return true;
+    }
+
+    function applyLanguage(language) {
+      const validLanguage = language === 'es' ? 'es' : 'en';
+
+      document.querySelectorAll('[data-language]').forEach(button => {
+        button.setAttribute('aria-pressed', String(button.dataset.language === validLanguage));
+      });
+      updateAreaLabels(validLanguage);
+      storeValue(LANGUAGE_STORAGE_KEY, validLanguage);
+      if (typeof allResources !== 'undefined' && allResources.length) render();
+
+      setGoogleTranslateCookie(validLanguage);
+      setGoogleTranslateLanguage(validLanguage);
+      window.setTimeout(() => setGoogleTranslateLanguage(validLanguage), 500);
+      window.setTimeout(() => setGoogleTranslateLanguage(validLanguage), 1500);
+    }
+
+    const WICHITA_AREA_LABELS = {
+      en: { NE: 'NE', NW: 'NW', SE: 'SE', SW: 'SW', Central: 'Central' },
+      es: { NE: 'NE', NW: 'NO', SE: 'SE', SW: 'SO', Central: 'Centro' }
+    };
+
+    function displayAreaName(area, language) {
+      const lang = language === 'es' ? 'es' : 'en';
+      const cleanArea = clean(area);
+      return WICHITA_AREA_LABELS[lang][cleanArea] || cleanArea;
+    }
+
+    function updateAreaLabels(language) {
+      const lang = language === 'es' ? 'es' : 'en';
+      document.querySelectorAll('[data-area-code]').forEach(label => {
+        label.textContent = WICHITA_AREA_LABELS[lang][label.dataset.areaCode] || label.dataset.areaCode;
+      });
+    }
+
+    let translateResultsTimer = null;
+    function translateRenderedResults() {
+      if (translateResultsTimer) window.clearTimeout(translateResultsTimer);
+      translateResultsTimer = window.setTimeout(() => {
+        const language = readStoredValue(LANGUAGE_STORAGE_KEY) || 'en';
+        setGoogleTranslateLanguage(language);
+        updateAreaLabels(language);
+      }, 300);
+    }
+
+    function googleTranslateElementInit() {
+      if (typeof google === 'undefined' || !google.translate) return;
+      new google.translate.TranslateElement({
+        pageLanguage: 'en',
+        includedLanguages: 'en,es',
+        autoDisplay: false
+      }, 'googleTranslateContainer');
+
+      const savedLanguage = readStoredValue(LANGUAGE_STORAGE_KEY) || 'en';
+      window.setTimeout(() => applyLanguage(savedLanguage), 400);
+    }
+
+    document.querySelectorAll('[data-theme-option]').forEach(button => {
+      button.addEventListener('click', () => applyTheme(button.dataset.themeOption));
+    });
+
+    $('decreaseTextButton').addEventListener('click', () => {
+      applyTextScale(TEXT_SIZES[Math.max(0, currentTextScaleIndex() - 1)]);
+    });
+
+    $('increaseTextButton').addEventListener('click', () => {
+      applyTextScale(TEXT_SIZES[Math.min(TEXT_SIZES.length - 1, currentTextScaleIndex() + 1)]);
+    });
+
+    $('resetTextButton').addEventListener('click', () => applyTextScale(1));
+
+    document.querySelectorAll('[data-language]').forEach(button => {
+      button.addEventListener('click', () => applyLanguage(button.dataset.language, true));
+    });
+
+    applyTheme(readStoredValue(THEME_STORAGE_KEY) || 'dark');
+    applyTextScale(readStoredValue(TEXT_SIZE_STORAGE_KEY) || 1);
+    applyLanguage(readStoredValue(LANGUAGE_STORAGE_KEY) || 'en');
+
+    function parseGvizResponse(text) {
+      const start = text.indexOf('{');
+      const end = text.lastIndexOf('}');
+      if (start === -1 || end === -1) throw new Error('Google Sheets returned an invalid data response');
+      return JSON.parse(text.slice(start, end + 1));
+    }
+
+    async function loadDirectoryDataFromGoogleSheet() {
+      const url = 'https://docs.google.com/spreadsheets/d/' + encodeURIComponent(SHEET_ID) +
+        '/gviz/tq?tqx=out:json&cache=' + Date.now();
+      const response = await fetch(url, { headers: { 'Accept': 'application/json, text/plain, */*' } });
+      if (!response.ok) throw new Error('Could not read the public Google Sheet (' + response.status + ')');
+      const payload = parseGvizResponse(await response.text());
+      if (payload.status !== 'ok' || !payload.table) {
+        throw new Error(payload.errors && payload.errors[0] ? payload.errors[0].detailedMessage : 'Google Sheets returned no directory data');
+      }
+
+      const publicColumns = [
+        'Name of Resource', 'Location', 'Location notes', 'Available products or services',
+        'Required documentation', 'Phone', 'Website/URL', 'Resource type', 'Available times',
+        'Restrictions', 'Accessibility', 'Area', 'Whole Resource Verified Date',
+        'Latitude', 'Longitude'
+      ];
+
+      const labels = payload.table.cols.map((column, index) => clean(column.label) || String(column.id || '') || ('Column ' + (index + 1)));
+      const resources = (payload.table.rows || []).map((row, rowIndex) => {
+        const item = { _id: 'row-' + (rowIndex + 2) };
+        labels.forEach((label, index) => {
+          const cell = row.c && row.c[index];
+          item[label] = cell ? String(cell.v == null ? (cell.f == null ? '' : cell.f) : cell.v).trim() : '';
+        });
+        item.latitude = normalizeCoordinate(item.Latitude);
+        item.longitude = normalizeCoordinate(item.Longitude);
+        return item;
+      }).filter(resource => clean(resource['Name of Resource']));
+
+      return {
+        columns: publicColumns.filter(label => labels.includes(label)),
+        resources,
+        sheetName: 'Google Sheet'
+      };
+    }
+
+    loadDirectoryDataFromGoogleSheet()
+      .then(initialize)
+      .catch(error => {
+        $('resultsCount').textContent = 'Unable to load';
+        $('resultsWord').textContent = 'resources';
+        $('results').innerHTML = '<div class="empty error"><strong>There was a problem loading the directory.</strong><br>' + escapeHtml(error && error.message ? error.message : error) + '<br><br>Verify that the Google Sheet is shared with Anyone and the directory tab is the first tab.</div>';
+      });
+
+    if ('MutationObserver' in window) {
+      const resultsObserver = new MutationObserver(() => translateRenderedResults());
+      resultsObserver.observe($('results'), { childList: true });
+    }
+  </script>
+  <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+</body>
+
+</html>
