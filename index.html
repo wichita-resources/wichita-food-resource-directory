@@ -322,9 +322,79 @@
       font-weight: 700;
     }
 
+    .selection-summary {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 8px;
+      text-align: right;
+    }
+
+    #selectedCount {
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .selection-summary button,
+    .selection-actions button {
+      min-height: 40px;
+      padding: 6px 10px;
+    }
+
+    .selection-actions {
+      display: flex;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0 2px 10px;
+    }
+
+    .selection-summary button:disabled,
+    .selection-actions button:disabled,
+    .selection-dialog button:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
     .cards {
       display: grid;
       gap: 12px;
+    }
+
+    .resource-entry {
+      position: relative;
+      min-width: 0;
+    }
+
+    .resource-selection {
+      position: absolute;
+      z-index: 1;
+      top: 10px;
+      right: 48px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 38px;
+      padding: 4px 8px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--card-bg);
+      color: var(--card-text);
+      font-size: .9rem;
+      font-weight: 650;
+      cursor: pointer;
+    }
+
+    .resource-selection input {
+      width: 19px;
+      height: 19px;
+      margin: 0;
+      accent-color: var(--accent);
+    }
+
+    .resource-selection input:disabled {
+      cursor: not-allowed;
     }
 
     .resource-card {
@@ -342,7 +412,7 @@
     .resource-card>summary {
       list-style: none;
       cursor: pointer;
-      padding: 17px 18px;
+      padding: 17px 138px 17px 18px;
       color: var(--card-text);
     }
 
@@ -441,6 +511,65 @@
       background: var(--surface);
       border: 1px dashed var(--border);
       border-radius: var(--radius);
+    }
+
+    .selection-dialog {
+      width: min(520px, calc(100vw - 24px));
+      max-height: min(80vh, 640px);
+      margin: auto;
+      padding: 18px;
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    .selection-dialog::backdrop {
+      background: rgb(0 0 0 / 65%);
+    }
+
+    .selection-dialog-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .selection-dialog-header h2 {
+      margin: 0;
+      font-size: 1.15rem;
+    }
+
+    .selection-dialog-list {
+      display: grid;
+      gap: 8px;
+      margin: 16px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .selection-dialog-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--surface-2);
+    }
+
+    .selection-dialog-item-name {
+      min-width: 0;
+      overflow-wrap: anywhere;
+      font-weight: 650;
+    }
+
+    .selection-dialog-item button {
+      flex: 0 0 auto;
+      min-height: 40px;
+      padding: 6px 10px;
     }
 
     .error {
@@ -612,11 +741,28 @@
       }
 
       .resource-card>summary {
-        padding: 15px;
+        padding: 15px 138px 15px 15px;
       }
 
       .card-body {
         padding: 14px 15px 16px;
+      }
+
+      .meta-row {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .selection-summary {
+        align-self: flex-end;
+      }
+
+      .selection-actions {
+        justify-content: stretch;
+      }
+
+      .selection-actions button {
+        flex: 1 1 150px;
       }
     }
 
@@ -736,11 +882,26 @@
 
     <div class="meta-row" aria-live="polite" aria-atomic="true">
       <div><span id="resultsCount">Loading…</span> <span id="resultsWord">resources</span></div>
-      <div id="updatedLabel"></div>
+      <div class="selection-summary">
+        <span id="selectedCount">0 resources selected</span>
+        <button id="reviewSelectionButton" type="button" disabled>Review selection</button>
+      </div>
+    </div>
+    <div class="selection-actions" role="group" aria-label="Resource selection actions">
+      <button id="selectAllFilteredButton" type="button" disabled>Select all filtered results</button>
+      <button id="clearSelectionButton" type="button" disabled>Clear selection</button>
     </div>
     <section id="results" class="cards" aria-label="Food and community resources">
       <div class="loading">Loading resources…</div>
     </section>
+    <dialog id="selectionDialog" class="selection-dialog" aria-labelledby="selectionDialogTitle">
+      <div class="selection-dialog-header">
+        <h2 id="selectionDialogTitle">Selected resources</h2>
+        <button id="closeSelectionDialogButton" type="button" aria-label="Close selected resources">Close</button>
+      </div>
+      <p id="selectionDialogSummary" aria-live="polite"></p>
+      <ul id="selectedResourcesList" class="selection-dialog-list"></ul>
+    </dialog>
     <p class="footer-note">Information is provided as a directory. Availability, hours, eligibility, and access
       arrangements can change; contact the organization to confirm before visiting.</p>
   </main>
@@ -771,6 +932,7 @@
     let map;
     let mapMarkers = [];
     let selectedResourceId = null;
+    const selectedResourceIds = new Set();
     const GEOCODE_CACHE = new Map();
 
     const $ = id => document.getElementById(id);
@@ -834,12 +996,12 @@
         const longitude = normalizeCoordinate(resource.longitude);
         return {
           ...resource,
+          _id: clean(resource['Resource ID']) || resource._id,
           latitude: latitude,
           longitude: longitude
         };
       });
       columns = data.columns || [];
-      $('updatedLabel').textContent = allResources.length ? '' : '';
       initializeMap();
       render();
 
@@ -906,6 +1068,10 @@
       return String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
     }
 
+    function getSelectionId(resource) {
+      return clean(resource['Resource ID']);
+    }
+
     function safeUrl(value) {
       let url = clean(value);
       if (!url) return '';
@@ -951,6 +1117,7 @@
 
     function cardHtml(resource, context) {
       const name = clean(resource['Name of Resource']);
+      const selectionId = getSelectionId(resource);
       const area = clean(resource.Area);
       const language = readStoredValue(LANGUAGE_STORAGE_KEY) || 'en';
       const headingName = '<span class="notranslate" translate="no">' + escapeHtml(name) + '</span>';
@@ -986,7 +1153,51 @@
         ? 'This resource was last verified as accurate on ' + escapeHtml(verifiedDate)
         : "This entry's accuracy has not yet been verified";
 
-      return '<details class="resource-card" id="resource-' + escapeHtml(resource._id) + '" ' + (selectedResourceId === resource._id ? 'open' : '') + '><summary>' + summary + '</summary><div class="card-body">' + details + '<div class="verification-note">' + verificationNote + '</div></div></details>';
+      const selectionControl = '<label class="resource-selection"><input class="resource-select" type="checkbox" data-resource-id="' +
+        escapeHtml(selectionId) + '" aria-label="' + escapeHtml(selectionId
+          ? 'Select ' + name
+          : 'Cannot select ' + name + ' because its Resource ID is missing') + '"' +
+        (selectionId ? (selectedResourceIds.has(selectionId) ? ' checked' : '') : ' disabled title="Resource ID is missing"') +
+        '><span>Select</span></label>';
+
+      return '<div class="resource-entry">' + selectionControl + '<details class="resource-card" id="resource-' +
+        escapeHtml(resource._id) + '" ' + (selectedResourceId === resource._id ? 'open' : '') +
+        '><summary>' + summary + '</summary><div class="card-body">' + details +
+        '<div class="verification-note">' + verificationNote + '</div></div></details></div>';
+    }
+
+    function getSelectedResources() {
+      const selectedById = new Map();
+      allResources.forEach(resource => {
+        const id = getSelectionId(resource);
+        if (selectedResourceIds.has(id) && !selectedById.has(id)) selectedById.set(id, resource);
+      });
+      return Array.from(selectedById.entries());
+    }
+
+    function updateSelectionInterface(filteredResources) {
+      const count = selectedResourceIds.size;
+      $('selectedCount').textContent = count + (count === 1 ? ' resource selected' : ' resources selected');
+      $('reviewSelectionButton').disabled = count === 0;
+      $('clearSelectionButton').disabled = count === 0;
+      $('selectAllFilteredButton').disabled = !filteredResources.some(getSelectionId);
+      if ($('selectionDialog').open) renderSelectedResources();
+    }
+
+    function renderSelectedResources() {
+      const selected = getSelectedResources();
+      $('selectionDialogSummary').textContent = selected.length
+        ? selected.length + (selected.length === 1 ? ' resource selected' : ' resources selected')
+        : 'No resources selected.';
+      $('selectedResourcesList').innerHTML = selected.length
+        ? selected.map(([id, resource]) => {
+          const label = [clean(resource['Name of Resource']), clean(resource.Area)].filter(Boolean).join(' — ');
+          return '<li class="selection-dialog-item"><span class="selection-dialog-item-name">' +
+            escapeHtml(label) + '</span><button type="button" data-remove-resource="' +
+            escapeHtml(id) + '" aria-label="Remove ' + escapeHtml(clean(resource['Name of Resource'])) +
+            ' from selection">Remove</button></li>';
+        }).join('')
+        : '<li class="empty">No resources selected.</li>';
     }
 
     function setSelectedResource(resourceId) {
@@ -1072,6 +1283,7 @@
       $('results').innerHTML = count
         ? context.filtered.map(resource => cardHtml(resource, context)).join('')
         : '<div class="empty"><strong>No matching resources found.</strong><br>Try removing a filter or changing your search.</div>';
+      updateSelectionInterface(context.filtered);
       translateRenderedResults();
       renderMap(context.filtered);
       if (count) geocodeMissingResources();
@@ -1085,6 +1297,46 @@
       document.querySelectorAll('.filter-options input[type="checkbox"]').forEach(input => { input.checked = false; });
       render();
     }
+
+    $('results').addEventListener('change', event => {
+      const checkbox = event.target.closest('.resource-select');
+      if (!checkbox || checkbox.disabled) return;
+      const resourceId = checkbox.dataset.resourceId;
+      if (checkbox.checked) selectedResourceIds.add(resourceId);
+      else selectedResourceIds.delete(resourceId);
+      updateSelectionInterface(getFilteredResources().filtered);
+    });
+
+    $('selectAllFilteredButton').addEventListener('click', () => {
+      getFilteredResources().filtered.forEach(resource => {
+        const resourceId = getSelectionId(resource);
+        if (resourceId) selectedResourceIds.add(resourceId);
+      });
+      render();
+    });
+
+    $('clearSelectionButton').addEventListener('click', () => {
+      selectedResourceIds.clear();
+      render();
+    });
+
+    $('reviewSelectionButton').addEventListener('click', () => {
+      renderSelectedResources();
+      $('selectionDialog').showModal();
+    });
+
+    $('closeSelectionDialogButton').addEventListener('click', () => $('selectionDialog').close());
+
+    $('selectedResourcesList').addEventListener('click', event => {
+      const button = event.target.closest('[data-remove-resource]');
+      if (!button) return;
+      selectedResourceIds.delete(button.dataset.removeResource);
+      render();
+    });
+
+    $('selectionDialog').addEventListener('click', event => {
+      if (event.target === event.currentTarget) event.currentTarget.close();
+    });
 
     $('results').addEventListener('click', event => {
       const card = event.target.closest('.resource-card');
@@ -1314,6 +1566,7 @@
           const cell = row.c && row.c[index];
           item[label] = cell ? String(cell.v == null ? (cell.f == null ? '' : cell.f) : cell.v).trim() : '';
         });
+        item._id = clean(item['Resource ID']) || item._id;
         item.latitude = normalizeCoordinate(item.Latitude);
         item.longitude = normalizeCoordinate(item.Longitude);
         return item;

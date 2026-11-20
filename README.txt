@@ -43,6 +43,12 @@ FILTER BEHAVIOR
 - Search checks all 11 public-facing columns.
 - Sorting is available for all 11 public-facing columns.
 
+RESOURCE SELECTION
+- Use the checkbox on a resource card to select it without opening the card.
+- Selections use Resource ID, remain selected while search and filters change, and can be reviewed or removed individually.
+- "Select all filtered results" adds the currently visible filtered resources to the selection; "Clear selection" removes all selections.
+- Resources without a Resource ID cannot be selected.
+
 ACCESSIBILITY / PRIVACY NOTES
 - The app uses native HTML details/summary disclosure controls and checkbox inputs, keyboard focus styling, responsive layouts, and reduced-motion support.
 - The app does not display the spreadsheet's verification metadata or resource IDs.
