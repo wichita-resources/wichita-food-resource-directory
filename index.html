@@ -908,6 +908,7 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="resource-normalization.js"></script>
   <script>
     const SHEET_ID = '1mkEp1bDZ2XYpyJ5y3vHoRetm23aH-uWjcmmomz1ctJ0';
 
@@ -948,12 +949,7 @@
     }
 
     function normalizeCoordinate(rawValue) {
-      const text = clean(rawValue);
-      if (!text) return null;
-      const value = Number(text);
-      if (!Number.isFinite(value)) return null;
-      if (value === 0) return null;
-      return value;
+      return ResourceNormalization.normalizeCoordinate(rawValue);
     }
 
     function hasValidCoordinate(resource) {
@@ -991,16 +987,7 @@
         resourceCount: (data.resources || []).length,
         sheetName: data.sheetName
       });
-      allResources = (data.resources || []).map(resource => {
-        const latitude = normalizeCoordinate(resource.latitude);
-        const longitude = normalizeCoordinate(resource.longitude);
-        return {
-          ...resource,
-          _id: clean(resource['Resource ID']) || resource._id,
-          latitude: latitude,
-          longitude: longitude
-        };
-      });
+      allResources = data.resources || [];
       columns = data.columns || [];
       initializeMap();
       render();
@@ -1552,31 +1539,7 @@
         throw new Error(payload.errors && payload.errors[0] ? payload.errors[0].detailedMessage : 'Google Sheets returned no directory data');
       }
 
-      const publicColumns = [
-        'Name of Resource', 'Location', 'Location notes', 'Available products or services',
-        'Required documentation', 'Phone', 'Website/URL', 'Resource type', 'Available times',
-        'Restrictions', 'Accessibility', 'Area', 'Whole Resource Verified Date',
-        'Latitude', 'Longitude'
-      ];
-
-      const labels = payload.table.cols.map((column, index) => clean(column.label) || String(column.id || '') || ('Column ' + (index + 1)));
-      const resources = (payload.table.rows || []).map((row, rowIndex) => {
-        const item = { _id: 'row-' + (rowIndex + 2) };
-        labels.forEach((label, index) => {
-          const cell = row.c && row.c[index];
-          item[label] = cell ? String(cell.v == null ? (cell.f == null ? '' : cell.f) : cell.v).trim() : '';
-        });
-        item._id = clean(item['Resource ID']) || item._id;
-        item.latitude = normalizeCoordinate(item.Latitude);
-        item.longitude = normalizeCoordinate(item.Longitude);
-        return item;
-      }).filter(resource => clean(resource['Name of Resource']));
-
-      return {
-        columns: publicColumns.filter(label => labels.includes(label)),
-        resources,
-        sheetName: 'Google Sheet'
-      };
+      return ResourceNormalization.normalizeGvizTable(payload.table);
     }
 
     loadDirectoryDataFromGoogleSheet()
