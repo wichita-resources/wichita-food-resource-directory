@@ -2,13 +2,13 @@ WICHITA FOOD RESOURCE DIRECTORY
 
 OVERVIEW
 - This is a static website. The browser reads the public Google Sheet directly; it does not use Google Apps Script.
-- The app uses index.html, resource-normalization.js, and calendar-logic.js. Publish all three files together on your static host.
+- The app uses index.html, resource-normalization.js, calendar-logic.js, and calendar-docx.js. Publish all four files together on your static host.
 - Anyone who can access the sheet can read its contents. Do not put private or sensitive information in it.
 
 SETUP
 1. Make the resource directory sheet publicly readable.
 2. Set the SHEET_ID value in index.html to the spreadsheet ID.
-3. Publish index.html, resource-normalization.js, and calendar-logic.js to your static host.
+3. Publish index.html, resource-normalization.js, calendar-logic.js, and calendar-docx.js to your static host.
 4. Open the published page and confirm that the resource list loads.
 
 DATA HEADERS
@@ -24,11 +24,12 @@ DATA HEADERS
 - Calendar output uses the Short Name field instead of Name of Resource for compact titles.
 - The selected-resources dialog opens a printable monthly calendar. It includes only Calendar Event values TRUE and TRUE*, starts with the current month, and supports printing 1–6 consecutive months with one month per landscape page.
 - Selected resources with a Calendar Event value of FALSE are listed below each month with their Short Name and Available times.
+- The calendar view can export the displayed month range as a .docx document that can be opened in Google Docs.
 - Calendar recurrence and grouping rules, holiday handling, and confirmation markers are recorded in docs/adr/0001-calendar-output-rules.md.
 
 UPDATES
 - Edit the Google Sheet to update resource information. Reloading the page fetches the latest sheet contents.
-- When changing the app code, publish index.html, resource-normalization.js, and calendar-logic.js together.
+- When changing the app code, publish index.html, resource-normalization.js, calendar-logic.js, and calendar-docx.js together.
 - Spreadsheet data changes do not require a new app deployment.
 
 FILTER BEHAVIOR
