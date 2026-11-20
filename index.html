@@ -371,12 +371,13 @@
       position: absolute;
       z-index: 1;
       top: 10px;
-      right: 48px;
+      right: 50px;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      justify-content: center;
       min-height: 38px;
-      padding: 4px 8px;
+      min-width: 38px;
+      padding: 4px;
       border: 1px solid var(--border);
       border-radius: 8px;
       background: var(--card-bg);
@@ -412,7 +413,7 @@
     .resource-card>summary {
       list-style: none;
       cursor: pointer;
-      padding: 17px 138px 17px 18px;
+      padding: 17px 18px;
       color: var(--card-text);
     }
 
@@ -547,6 +548,20 @@
       margin: 16px 0 0;
       padding: 0;
       list-style: none;
+    }
+
+    .selection-dialog-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .selection-dialog-actions button {
+      min-width: 0;
+      min-height: 48px;
+      padding: 8px;
+      overflow-wrap: anywhere;
     }
 
     .selection-dialog-item {
@@ -741,7 +756,7 @@
       }
 
       .resource-card>summary {
-        padding: 15px 138px 15px 15px;
+        padding: 15px;
       }
 
       .card-body {
@@ -901,6 +916,12 @@
       </div>
       <p id="selectionDialogSummary" aria-live="polite"></p>
       <ul id="selectedResourcesList" class="selection-dialog-list"></ul>
+      <div class="selection-dialog-actions" role="group" aria-label="Calendar and print options">
+        <button type="button">📅Printable calendar view</button>
+        <button type="button">➕Add to Google Calendar</button>
+        <button type="button">📃 Printable list view</button>
+        <button type="button">📥Export .ics calendar file</button>
+      </div>
     </dialog>
     <p class="footer-note">Information is provided as a directory. Availability, hours, eligibility, and access
       arrangements can change; contact the organization to confirm before visiting.</p>
@@ -1145,7 +1166,7 @@
           ? 'Select ' + name
           : 'Cannot select ' + name + ' because its Resource ID is missing') + '"' +
         (selectionId ? (selectedResourceIds.has(selectionId) ? ' checked' : '') : ' disabled title="Resource ID is missing"') +
-        '><span>Select</span></label>';
+        '></label>';
 
       return '<div class="resource-entry">' + selectionControl + '<details class="resource-card" id="resource-' +
         escapeHtml(resource._id) + '" ' + (selectedResourceId === resource._id ? 'open' : '') +
