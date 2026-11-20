@@ -86,6 +86,44 @@ test('projects only app fields and keeps calendar values out of searchable colum
   assert.equal(Object.hasOwn(resource, 'Admin review notes'), false);
 });
 
+test('normalizes live calendar header casing and preserves continuation schedule rows', () => {
+  const headers = [
+    'Name of Resource',
+    'Short Name',
+    'Event Label',
+    'Calendar Event',
+    'Which one(s)',
+    'Day(s) of week',
+    'Interval',
+    'Time',
+    'Time exceptions',
+    'Resource ID'
+  ];
+  const result = normalizeGvizTable(makeTable(headers, [
+    ['Community Pantry', 'Pantry', 'Monday', true, 'Every', 'Monday', 'Weekly', '9:00 AM', '', 'resource-123'],
+    ['', '', 'Tuesday', true, 'Every', 'Tuesday', 'Weekly', '10:00 AM', '', 'resource-123']
+  ]));
+
+  assert.equal(result.resources.length, 1);
+  assert.equal(result.calendarRows.length, 2);
+  assert.equal(result.calendarRows[0]['Short name'], 'Pantry');
+  assert.equal(result.calendarRows[0]['Event label'], 'Monday');
+  assert.equal(result.calendarRows[0]['Calendar event'], 'true');
+  assert.equal(result.calendarRows[1]['Name of Resource'], '');
+  assert.equal(result.calendarRows[1]['Resource ID'], 'resource-123');
+});
+
+test('preserves a formatted confirmation marker on a boolean calendar flag', () => {
+  const headers = ['Name of Resource', 'Short name', 'Calendar Event', 'Resource ID'];
+  const table = {
+    cols: headers.map(label => ({ label })),
+    rows: [{ c: [{ v: 'Community Pantry' }, { v: 'Pantry' }, { v: true, f: 'TRUE*' }, { v: 'resource-123' }] }]
+  };
+  const result = normalizeGvizTable(table);
+
+  assert.equal(result.calendarRows[0]['Calendar event'], 'TRUE*');
+});
+
 test('keeps resources with unusable coordinates and drops rows without a name', () => {
   const headers = ['Name of Resource', 'Latitude', 'Longitude', 'Resource ID'];
   const result = normalizeGvizTable(makeTable(headers, [

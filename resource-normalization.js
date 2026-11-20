@@ -27,6 +27,7 @@
 
   const resourceFields = new Set([
     ...searchableColumns,
+    'Short name',
     'Resource ID',
     'Event label',
     'Calendar event',
@@ -37,8 +38,25 @@
     'Time exceptions'
   ]);
 
+  const calendarHeaderAliases = new Map([
+    ['short name', 'Short name'],
+    ['event label', 'Event label'],
+    ['calendar event', 'Calendar event'],
+    ['which one(s)', 'Which one(s)'],
+    ['day(s) of week', 'Day(s) of week'],
+    ['day(s) of the week', 'Day(s) of week'],
+    ['interval', 'Interval'],
+    ['time', 'Time'],
+    ['time exceptions', 'Time exceptions']
+  ]);
+
   function clean(value) {
     return value == null ? '' : String(value).trim();
+  }
+
+  function canonicalizeCalendarHeader(value) {
+    const label = clean(value);
+    return calendarHeaderAliases.get(label.toLowerCase()) || label;
   }
 
   function normalizeCoordinate(value) {
@@ -71,16 +89,19 @@
     }
 
     const labels = table.cols.map((column, index) =>
-      clean(column && column.label) || String((column && column.id) || '') || ('Column ' + (index + 1))
+      canonicalizeCalendarHeader(
+        clean(column && column.label) || String((column && column.id) || '') || ('Column ' + (index + 1))
+      )
     );
-    const resources = rows.map((row, rowIndex) => {
+    const normalizedRows = rows.map((row, rowIndex) => {
       const resource = { _id: 'row-' + (rowIndex + 2) };
       labels.forEach((label, index) => {
         if (!resourceFields.has(label)) return;
 
         const cell = row.c && row.c[index];
+        const formattedCalendarFlag = label === 'Calendar event' && cell && /\*/.test(String(cell.f || ''));
         resource[label] = cell
-          ? String(cell.v == null ? (cell.f == null ? '' : cell.f) : cell.v).trim()
+          ? String(formattedCalendarFlag ? cell.f : (cell.v == null ? (cell.f == null ? '' : cell.f) : cell.v)).trim()
           : '';
       });
 
@@ -88,11 +109,14 @@
       resource.latitude = normalizeLatitude(resource.Latitude);
       resource.longitude = normalizeLongitude(resource.Longitude);
       return resource;
-    }).filter(resource => clean(resource['Name of Resource']));
+    });
+    const resources = normalizedRows.filter(resource => clean(resource['Name of Resource']));
+    const calendarRows = normalizedRows.filter(resource => clean(resource['Resource ID']));
 
     return {
       columns: searchableColumns.filter(label => labels.includes(label)),
       resources,
+      calendarRows,
       sheetName: 'Google Sheet'
     };
   }

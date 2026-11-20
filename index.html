@@ -526,6 +526,201 @@
       color: var(--text);
     }
 
+    .calendar-dialog {
+      width: min(1200px, calc(100vw - 24px));
+      max-width: none;
+      max-height: 94vh;
+      margin: auto;
+      padding: 20px;
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    .calendar-dialog::backdrop {
+      background: rgb(0 0 0 / 65%);
+    }
+
+    .calendar-dialog-header,
+    .calendar-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .calendar-dialog-header h2 {
+      margin: 0;
+      font-size: 1.25rem;
+    }
+
+    .calendar-controls {
+      justify-content: flex-start;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .calendar-controls label {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-weight: 650;
+    }
+
+    .calendar-month-count {
+      min-width: 76px;
+    }
+
+    .calendar-intro {
+      margin: 12px 0 18px;
+      color: var(--muted);
+    }
+
+    .calendar-months {
+      display: grid;
+      gap: 18px;
+    }
+
+    .calendar-month-page {
+      min-width: 0;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface-2);
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .calendar-month-page h3 {
+      margin: 0 0 12px;
+      font-size: 1.3rem;
+    }
+
+    .calendar-grid-wrap {
+      overflow-x: auto;
+    }
+
+    .calendar-table {
+      width: 100%;
+      min-width: 780px;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    .calendar-table th {
+      padding: 7px;
+      text-align: center;
+      font-weight: 750;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .calendar-day {
+      min-width: 0;
+      min-height: 100px;
+      padding: 6px;
+      vertical-align: top;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .calendar-day--outside {
+      background: var(--surface-2);
+    }
+
+    .calendar-day-number {
+      display: block;
+      margin-bottom: 4px;
+      font-weight: 750;
+    }
+
+    .calendar-event-list {
+      display: grid;
+      gap: 5px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .calendar-event {
+      padding: 4px;
+      border-left: 3px solid var(--accent);
+      overflow-wrap: anywhere;
+      font-size: .78rem;
+      line-height: 1.3;
+    }
+
+    .calendar-event strong,
+    .calendar-event-time,
+    .calendar-event-note {
+      display: block;
+    }
+
+    .calendar-event-note {
+      margin-top: 2px;
+      color: var(--muted);
+    }
+
+    .calendar-undated {
+      margin-top: 12px;
+      padding-top: 9px;
+      border-top: 1px solid var(--border);
+    }
+
+    .calendar-undated h4 {
+      margin: 0 0 6px;
+      font-size: .95rem;
+    }
+
+    .calendar-undated-list {
+      display: grid;
+      gap: 5px;
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .calendar-false-list {
+      margin-top: 12px;
+      padding-top: 9px;
+      border-top: 1px solid var(--border);
+    }
+
+    .calendar-false-list h4 {
+      margin: 0 0 6px;
+      font-size: .95rem;
+    }
+
+    .calendar-false-list ul {
+      display: grid;
+      gap: 5px;
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .calendar-false-list li {
+      font-size: .84rem;
+      white-space: pre-wrap;
+    }
+
+    .calendar-undated-item {
+      font-size: .84rem;
+    }
+
+    .calendar-empty {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .calendar-legend {
+      margin: 12px 0 0;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+      font-size: .82rem;
+    }
+
     .selection-dialog::backdrop {
       background: rgb(0 0 0 / 65%);
     }
@@ -790,6 +985,168 @@
         transition: none !important;
       }
     }
+
+    @media print {
+      @page calendar-month {
+        size: letter landscape;
+        margin: .35in;
+      }
+
+      body:has(#calendarDialog[open]) {
+        min-width: 0 !important;
+        margin: 0 !important;
+        background: #fff !important;
+        color: #111 !important;
+        font-size: 9pt !important;
+      }
+
+      body:has(#calendarDialog[open])>main.page {
+        width: auto !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      body:has(#calendarDialog[open])>main.page> :not(#calendarDialog) {
+        display: none !important;
+      }
+
+      #calendarDialog[open] {
+        page: calendar-month;
+        position: static !important;
+        inset: auto !important;
+        display: block !important;
+        width: 100% !important;
+        max-width: none !important;
+        max-height: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: #fff !important;
+        color: #111 !important;
+        box-shadow: none !important;
+      }
+
+      #calendarDialog::backdrop,
+      .calendar-dialog-header,
+      .calendar-controls,
+      .calendar-intro {
+        display: none !important;
+      }
+
+      .calendar-months {
+        display: block !important;
+      }
+
+      .calendar-month-page {
+        min-height: 7.65in;
+        margin: 0;
+        padding: 0;
+        overflow: visible;
+        border: 0;
+        border-radius: 0;
+        background: #fff;
+        color: #111;
+        page: calendar-month;
+        break-inside: avoid;
+        page-break-inside: avoid;
+        break-after: page;
+        page-break-after: always;
+      }
+
+      .calendar-month-page:last-child {
+        break-after: auto;
+        page-break-after: auto;
+      }
+
+      .calendar-month-page h3 {
+        margin: 0 0 7px;
+        font-size: 16pt;
+      }
+
+      .calendar-grid-wrap {
+        overflow: visible;
+      }
+
+      .calendar-weekdays,
+      .calendar-grid {
+        min-width: 0;
+      }
+
+      .calendar-table {
+        min-width: 0;
+      }
+
+      .calendar-table th {
+        padding: 3px;
+        border-color: #555;
+        color: #111;
+      }
+
+      .calendar-day {
+        height: 1.05in;
+        min-height: 0;
+        padding: 3px;
+        overflow: hidden;
+        border-color: #999;
+        background: #fff;
+        color: #111;
+      }
+
+      .calendar-day--outside {
+        background: #f1f1f1;
+      }
+
+      .calendar-day-number {
+        margin-bottom: 2px;
+      }
+
+      .calendar-event-list {
+        gap: 2px;
+      }
+
+      .calendar-event {
+        padding: 2px;
+        border-color: #333;
+        font-size: 6.5pt;
+        line-height: 1.15;
+      }
+
+      .calendar-event-note,
+      .calendar-undated,
+      .calendar-undated-item,
+      .calendar-false-list li,
+      .calendar-legend,
+      .calendar-empty {
+        color: #111;
+        font-size: 7pt;
+      }
+
+      .calendar-undated {
+        margin-top: 6px;
+        padding-top: 5px;
+      }
+
+      .calendar-undated-list {
+        gap: 2px;
+      }
+
+      .calendar-false-list {
+        margin-top: 6px;
+        padding-top: 5px;
+      }
+
+      .calendar-false-list ul {
+        gap: 2px;
+      }
+
+      .calendar-legend {
+        margin-top: 6px;
+        padding-top: 4px;
+      }
+    }
   </style>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
@@ -827,7 +1184,10 @@
     <header>
       <h1>Wichita Food Resource Directory</h1>
       <p class="intro">Find food assistance and other community resources in the Wichita area <br> (no ID or proof of
-        address required) <br><br> Use search and filters to narrow the list, then open a resource for details.</p>
+        address required) <br><br> Use search and filters to narrow the list, then open a resource for details. <br><br>
+        To create a personalized resource list or calendar: Select the resources you want to include, then choose
+        "Review
+        Selection" to print or export.</p>
     </header>
 
     <section class="panel controls" aria-label="Search and filter resources">
@@ -917,11 +1277,33 @@
       <p id="selectionDialogSummary" aria-live="polite"></p>
       <ul id="selectedResourcesList" class="selection-dialog-list"></ul>
       <div class="selection-dialog-actions" role="group" aria-label="Calendar and print options">
-        <button type="button">📅Printable calendar view</button>
+        <button id="printableCalendarViewButton" type="button">📅Printable calendar view</button>
         <button type="button">➕Add to Google Calendar</button>
         <button type="button">📃 Printable list view</button>
         <button type="button">📥Export .ics calendar file</button>
       </div>
+    </dialog>
+    <dialog id="calendarDialog" class="calendar-dialog" aria-labelledby="calendarDialogTitle">
+      <div class="calendar-dialog-header">
+        <h2 id="calendarDialogTitle">Printable calendar</h2>
+        <button id="backToSelectionButton" type="button">Back to selected resources</button>
+      </div>
+      <div class="calendar-controls">
+        <label for="calendarMonthCount">Print calendar for the next
+          <select id="calendarMonthCount" class="calendar-month-count">
+            <option value="1" selected>1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+          </select>
+          month(s)
+        </label>
+        <button id="printCalendarButton" type="button">Print calendar</button>
+      </div>
+      <p class="calendar-intro">The calendar starts with the current month. Each month prints on its own page.</p>
+      <div id="calendarMonths" class="calendar-months"></div>
     </dialog>
     <p class="footer-note">Information is provided as a directory. Availability, hours, eligibility, and access
       arrangements can change; contact the organization to confirm before visiting.</p>
@@ -930,6 +1312,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="resource-normalization.js"></script>
+  <script src="calendar-logic.js"></script>
   <script>
     const SHEET_ID = '1mkEp1bDZ2XYpyJ5y3vHoRetm23aH-uWjcmmomz1ctJ0';
 
@@ -950,6 +1333,7 @@
     const AREA_NAMES = ['NE', 'NW', 'SE', 'SW', 'Central'];
     const MAP_CENTER = [37.6872, -97.3301];
     let allResources = [];
+    let allCalendarRows = [];
     let columns = [];
     let map;
     let mapMarkers = [];
@@ -1008,7 +1392,9 @@
         resourceCount: (data.resources || []).length,
         sheetName: data.sheetName
       });
+
       allResources = data.resources || [];
+      allCalendarRows = data.calendarRows || allResources;
       columns = data.columns || [];
       initializeMap();
       render();
@@ -1208,6 +1594,83 @@
         : '<li class="empty">No resources selected.</li>';
     }
 
+    function calendarEventHtml(event) {
+      const marker = event.needsConfirmation ? ' *' : '';
+      const times = event.times.length
+        ? '<span class="calendar-event-time">' + event.times.map(escapeHtml).join('; ') + '</span>'
+        : '';
+      const notes = event.notes.map(note =>
+        '<span class="calendar-event-note">' + escapeHtml(note) + '</span>'
+      ).join('');
+      return '<li class="calendar-event"><strong>' + escapeHtml(event.title + marker) + '</strong>' +
+        times + notes + '</li>';
+    }
+
+    function calendarMonthHtml(month) {
+      const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+        .map(day => '<th scope="col">' + day + '</th>').join('');
+      const weeks = month.weeks.map(week => '<tr>' + week.map(cell => {
+        if (!cell) return '<td class="calendar-day calendar-day--outside" aria-hidden="true"></td>';
+        const dateLabel = new Date(month.year, month.month, cell.dayNumber)
+          .toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+        const events = cell.events.length
+          ? '<ul class="calendar-event-list">' + cell.events.map(calendarEventHtml).join('') + '</ul>'
+          : '';
+        return '<td class="calendar-day" aria-label="' + escapeHtml(dateLabel) + '">' +
+          '<span class="calendar-day-number">' + cell.dayNumber + '</span>' + events + '</td>';
+      }).join('') + '</tr>').join('');
+      const hasDatedEvents = month.weeks.some(week => week.some(cell => cell && cell.events.length));
+      const undated = month.undatedEvents.length
+        ? '<section class="calendar-undated" aria-label="Schedules that need confirmation">' +
+        '<h4>Schedules to confirm</h4><ul class="calendar-undated-list">' +
+        month.undatedEvents.map(event => {
+          const title = event.title + (event.needsConfirmation ? ' *' : '');
+          const reasons = event.reasons.join(' ');
+          const times = event.times.length ? ' Times: ' + event.times.join('; ') + '.' : '';
+          const notes = event.notes.length ? ' Notes: ' + event.notes.join('; ') + '.' : '';
+          return '<li class="calendar-undated-item"><strong>' + escapeHtml(title) + '</strong> — ' +
+            escapeHtml(reasons + times + notes) + '</li>';
+        }).join('') + '</ul></section>'
+        : '';
+      const legend = month.hasConfirmationMarker
+        ? '<p class="calendar-legend"><strong>*</strong> Confirm before visiting. This marks an unconfirmed schedule or holiday occurrence.</p>'
+        : '';
+      const falseResources = month.falseResources.length
+        ? '<section class="calendar-false-list" aria-label="Resources not included as calendar events">' +
+        '<h4>Resources not included as calendar events</h4><ul>' +
+        month.falseResources.map(resource => {
+          const times = resource.availableTimes.length
+            ? resource.availableTimes.join('; ')
+            : 'Available times not specified';
+          return '<li><strong>' + escapeHtml(resource.shortName) + '</strong> — ' +
+            escapeHtml(times) + '</li>';
+        }).join('') + '</ul></section>'
+        : '';
+
+      return '<section class="calendar-month-page" aria-labelledby="calendar-month-' +
+        month.year + '-' + month.month + '">' +
+        '<h3 id="calendar-month-' + month.year + '-' + month.month + '">' + escapeHtml(month.title) + '</h3>' +
+        '<div class="calendar-grid-wrap"><table class="calendar-table" aria-label="' +
+        escapeHtml(month.title + ' calendar') + '"><thead><tr>' + weekdays + '</tr></thead><tbody>' +
+        weeks + '</tbody></table></div>' +
+        (!hasDatedEvents && !month.undatedEvents.length
+          ? '<p class="calendar-empty">No scheduled calendar events for this month.</p>'
+          : '') +
+        undated +
+        legend +
+        falseResources +
+        '</section>';
+    }
+
+    function renderCalendar() {
+      const monthCount = Number($('calendarMonthCount').value);
+      const selectedRows = allCalendarRows.filter(row => selectedResourceIds.has(getSelectionId(row)));
+      const calendar = CalendarLogic.buildCalendar(selectedRows, monthCount, new Date());
+      $('calendarMonths').innerHTML = calendar.months.map(month =>
+        calendarMonthHtml({ ...month, falseResources: calendar.falseResources })
+      ).join('');
+    }
+
     function setSelectedResource(resourceId) {
       selectedResourceId = resourceId;
 
@@ -1334,6 +1797,21 @@
     });
 
     $('closeSelectionDialogButton').addEventListener('click', () => $('selectionDialog').close());
+
+    $('printableCalendarViewButton').addEventListener('click', () => {
+      renderCalendar();
+      $('selectionDialog').close();
+      $('calendarDialog').showModal();
+    });
+
+    $('calendarMonthCount').addEventListener('change', renderCalendar);
+    $('printCalendarButton').addEventListener('click', () => window.print());
+
+    $('backToSelectionButton').addEventListener('click', () => {
+      $('calendarDialog').close();
+      renderSelectedResources();
+      $('selectionDialog').showModal();
+    });
 
     $('selectedResourcesList').addEventListener('click', event => {
       const button = event.target.closest('[data-remove-resource]');

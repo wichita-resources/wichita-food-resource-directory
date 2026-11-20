@@ -1,0 +1,9 @@
+# Shared calendar output rules
+
+Calendar outputs use selected resources and include only rows whose `Calendar Event` value is `TRUE` or `TRUE*`; `TRUE*` marks the event for confirmation, while `FALSE`, blank, and unrecognized values are excluded. Calendar titles use `Short name`, including across continuation rows that share a `Resource ID` but have no resource name. Weekday/range event labels for the same resource form one business-hours event; other labels such as “Breakfast” and “Pantry” remain separate.
+
+The calendar view uses an explicit Print button after review. Its “Print calendar for the next [n] month(s)” control starts in the current month, offers 1–6 consecutive months, and never extends past the sixth displayed month; each month prints on one landscape page with Sunday first. Weekly schedules repeat on listed weekdays, daily schedules occur each date, and monthly schedules use the listed ordinal weekday(s). “Every” is not valid for a monthly interval; variable, appointment-only, incomplete, or invalid schedules remain visible in a confirmation section instead of receiving guessed dates.
+
+Time exceptions remain visible as notes. An explicit “Closed holidays” exception suppresses weekday occurrences on U.S. federal holidays and their observed weekdays. If a federal holiday itself falls on a weekend, that occurrence remains on the calendar with `*` for confirmation, while its observed weekday is suppressed. Other ambiguous holiday exceptions remain visible with `*`; the printable legend appears only on month pages that contain a marked entry.
+
+Selected resources with at least one `Calendar Event` value of `FALSE` are also listed below each month page with their `Short Name` and `Available times`. This list repeats on every page in a multi-month print; a resource may appear both in the calendar and in this list if its rows include both `TRUE` and `FALSE`.
