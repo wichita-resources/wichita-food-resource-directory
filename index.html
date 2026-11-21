@@ -539,6 +539,41 @@
       color: var(--text);
     }
 
+    .print-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .print-list-title {
+      display: none;
+    }
+
+    .print-list-entry {
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .print-list-entry-header {
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    .print-list-entry-details {
+      display: grid;
+      gap: 4px;
+      margin-top: 5px;
+      padding-left: 1.5em;
+      overflow-wrap: anywhere;
+    }
+
+    .print-list-contact {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0 1em;
+    }
+
     .calendar-dialog::backdrop {
       background: rgb(0 0 0 / 65%);
     }
@@ -998,7 +1033,13 @@
         margin: .35in;
       }
 
-      body:has(#calendarDialog[open]) {
+      @page printable-list {
+        size: letter portrait;
+        margin: .5in;
+      }
+
+      body:has(#calendarDialog[open]),
+      body:has(#printListDialog[open]) {
         min-width: 0 !important;
         margin: 0 !important;
         background: #fff !important;
@@ -1006,15 +1047,35 @@
         font-size: 9pt !important;
       }
 
-      body:has(#calendarDialog[open])>main.page {
+      body:has(#calendarDialog[open])>main.page,
+      body:has(#printListDialog[open])>main.page {
         width: auto !important;
         max-width: none !important;
         margin: 0 !important;
         padding: 0 !important;
       }
 
-      body:has(#calendarDialog[open])>main.page> :not(#calendarDialog) {
+      body:has(#calendarDialog[open])>main.page> :not(#calendarDialog),
+      body:has(#printListDialog[open])>main.page> :not(#printListDialog) {
         display: none !important;
+      }
+
+      #printListDialog[open] {
+        page: printable-list;
+        position: static !important;
+        inset: auto !important;
+        display: block !important;
+        width: 100% !important;
+        max-width: none !important;
+        max-height: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: #fff !important;
+        color: #111 !important;
+        box-shadow: none !important;
       }
 
       #calendarDialog[open] {
@@ -1036,10 +1097,40 @@
       }
 
       #calendarDialog::backdrop,
+      #printListDialog::backdrop,
       .calendar-dialog-header,
       .calendar-controls,
       .calendar-intro {
         display: none !important;
+      }
+
+      .print-list {
+        gap: 8px;
+      }
+
+      .print-list-title {
+        display: block;
+        margin: 0 0 8px;
+        font-size: 16pt;
+      }
+
+      .print-list-entry {
+        padding-bottom: 6px;
+        border-color: #999;
+      }
+
+      .print-list-entry-header {
+        font-size: 11pt;
+      }
+
+      .print-list-entry-details {
+        gap: 2px;
+        margin-top: 3px;
+      }
+
+      .print-list-contact a {
+        color: #111;
+        text-decoration: none;
       }
 
       .calendar-months {
@@ -1192,8 +1283,7 @@
       <p class="intro">Find food assistance and other community resources in the Wichita area <br> (no ID or proof of
         address required) <br><br> Use search and filters to narrow the list, then open a resource for details. <br><br>
         To create a personalized resource list or calendar: Select the resources you want to include, then choose
-        "Review
-        Selection" to print or export.</p>
+        "Create My List" to print or export.</p>
     </header>
 
     <section class="panel controls" aria-label="Search and filter resources">
@@ -1265,7 +1355,7 @@
       <div><span id="resultsCount">Loading…</span> <span id="resultsWord">resources</span></div>
       <div class="selection-summary">
         <span id="selectedCount">0 resources selected</span>
-        <button id="reviewSelectionButton" type="button" disabled>Review selection</button>
+        <button id="reviewSelectionButton" type="button" disabled>Create My List</button>
       </div>
     </div>
     <div class="selection-actions" role="group" aria-label="Resource selection actions">
@@ -1284,11 +1374,13 @@
       <ul id="selectedResourcesList" class="selection-dialog-list"></ul>
       <div class="selection-dialog-actions" role="group" aria-label="Calendar and print options">
         <button id="printableCalendarViewButton" type="button">📅Printable calendar view</button>
-        <button type="button">➕Add to Google Calendar</button>
-        <button type="button">📃 Printable list view</button>
-        <button type="button">📥Export .ics calendar file</button>
+        <button type="button" disabled>➕Add to Google Calendar*</button>
+        <button id="printableListViewButton" type="button">📃 Printable list view</button>
+        <button type="button" disabled>📥Export .ics calendar file*</button>
       </div>
-      <p class="selection-dialog-note">Note: Printable calendar view shows dates/times only. Printable list view includes resource details.</p>
+      <p class="selection-dialog-note">Note: Printable calendar view shows dates/times only. Printable
+        list view
+        includes resource details. <br> *Coming soon </p>
     </dialog>
     <dialog id="calendarDialog" class="calendar-dialog" aria-labelledby="calendarDialogTitle">
       <div class="calendar-dialog-header">
@@ -1313,6 +1405,17 @@
       <p class="calendar-intro">The calendar starts with the current month. Each month prints on its own page.</p>
       <div id="calendarMonths" class="calendar-months"></div>
     </dialog>
+    <dialog id="printListDialog" class="calendar-dialog" aria-labelledby="printListDialogTitle">
+      <div class="calendar-dialog-header">
+        <h2 id="printListDialogTitle">My Wichita Resource List</h2>
+        <button id="backFromPrintListButton" type="button">Back to selected resources</button>
+      </div>
+      <div class="calendar-controls">
+        <button id="printListButton" type="button">Print resource list</button>
+        <button id="exportListDocButton" type="button">Export to Google Doc</button>
+      </div>
+      <div id="printListEntries" class="print-list"></div>
+    </dialog>
     <p class="footer-note">Information is provided as a directory. Availability, hours, eligibility, and access
       arrangements can change; contact the organization to confirm before visiting.</p>
   </main>
@@ -1322,6 +1425,7 @@
   <script src="resource-normalization.js"></script>
   <script src="calendar-logic.js"></script>
   <script src="calendar-docx.js"></script>
+  <script src="print-list-logic.js"></script>
   <script>
     const SHEET_ID = '1mkEp1bDZ2XYpyJ5y3vHoRetm23aH-uWjcmmomz1ctJ0';
 
@@ -1681,6 +1785,40 @@
       return calendar;
     }
 
+    function printableListEntryHtml(entry) {
+      const websiteHref = safeUrl(entry.website);
+      const contact = entry.phone || entry.website
+        ? '<div class="print-list-contact">' +
+        (entry.phone ? '<span>' + phoneLink(entry.phone) + '</span>' : '') +
+        (entry.website ? '<span>' +
+          (websiteHref
+            ? '<a href="' + escapeHtml(websiteHref) + '">' + escapeHtml(entry.website) + '</a>'
+            : escapeHtml(entry.website)) + '</span>' : '') +
+        '</div>'
+        : '';
+
+      return '<article class="print-list-entry"><h3 class="print-list-entry-header"><strong>' +
+        escapeHtml(entry.shortName) + '</strong> — ' + escapeHtml(entry.availableTimes) +
+        '</h3><div class="print-list-entry-details">' +
+        entry.details.map(value => '<div>' + escapeHtml(value) + '</div>').join('') +
+        contact + '</div></article>';
+    }
+
+    function getPrintableListEntries() {
+      const resources = PrintListLogic.buildPrintableList(getSelectedResources().map(([, resource]) => resource));
+      const includeAccessibility = getFilteredResources().access.length > 0;
+      return resources.map(resource => PrintListLogic.describeResource(resource, includeAccessibility));
+    }
+
+    function renderPrintableList() {
+      const entries = getPrintableListEntries();
+      $('printListEntries').innerHTML =
+        '<h3 class="print-list-title">My Wichita Resource List</h3>' +
+        (entries.length
+          ? entries.map(printableListEntryHtml).join('')
+          : '<p class="calendar-empty">No resources selected.</p>');
+    }
+
     function setSelectedResource(resourceId) {
       selectedResourceId = resourceId;
 
@@ -1814,8 +1952,38 @@
       $('calendarDialog').showModal();
     });
 
+    $('printableListViewButton').addEventListener('click', () => {
+      renderPrintableList();
+      $('selectionDialog').close();
+      $('printListDialog').showModal();
+    });
+
     $('calendarMonthCount').addEventListener('change', renderCalendar);
     $('printCalendarButton').addEventListener('click', () => window.print());
+    $('printListButton').addEventListener('click', () => window.print());
+    $('exportListDocButton').addEventListener('click', () => {
+      try {
+        const documentBytes = CalendarDocx.createPrintableListDocx(getPrintableListEntries());
+        const today = new Date();
+        const date = [
+          today.getFullYear(),
+          String(today.getMonth() + 1).padStart(2, '0'),
+          String(today.getDate()).padStart(2, '0')
+        ].join('-');
+        const filename = 'food-resource-list-' + date + '.docx';
+        const url = URL.createObjectURL(new Blob([documentBytes], {
+          type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        }));
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        link.click();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      } catch (error) {
+        console.error('Could not export the printable resource list.', error);
+        window.alert('Could not export the printable resource list. Please try again.');
+      }
+    });
     $('exportCalendarDocButton').addEventListener('click', () => {
       try {
         const calendar = renderCalendar();
@@ -1839,6 +2007,12 @@
 
     $('backToSelectionButton').addEventListener('click', () => {
       $('calendarDialog').close();
+      renderSelectedResources();
+      $('selectionDialog').showModal();
+    });
+
+    $('backFromPrintListButton').addEventListener('click', () => {
+      $('printListDialog').close();
       renderSelectedResources();
       $('selectionDialog').showModal();
     });

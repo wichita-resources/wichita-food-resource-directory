@@ -8,7 +8,7 @@ OVERVIEW
 SETUP
 1. Make the resource directory sheet publicly readable.
 2. Set the SHEET_ID value in index.html to the spreadsheet ID.
-3. Publish index.html, resource-normalization.js, calendar-logic.js, and calendar-docx.js to your static host.
+3. Publish index.html, resource-normalization.js, calendar-logic.js, calendar-docx.js, and print-list-logic.js to your static host.
 4. Open the published page and confirm that the resource list loads.
 
 DATA HEADERS
@@ -25,11 +25,14 @@ DATA HEADERS
 - The selected-resources dialog opens a printable monthly calendar. It includes only Calendar Event values TRUE and TRUE*, starts with the current month, and supports printing 1–6 consecutive months with one month per landscape page.
 - Selected resources with a Calendar Event value of FALSE are listed below each month with their Short Name and Available times.
 - The calendar view can export the displayed month range as a .docx document that can be opened in Google Docs.
+- The printable resource list can also be downloaded as a .docx file for opening in Google Docs.
+- The printable list view includes all selected resources, ordered daily, weekly, monthly, then other or once-only schedules. Restrictions indicating once per month or 30 days sort with monthly resources; one-time-per-family restrictions sort last. When these restrictions do not specify a frequency, the Interval field determines the order.
+- Printable list entries include the Short Name, Available times, resource type, products or services, documentation, restrictions, location and location notes, phone, and website. Accessibility details appear only while an accessibility filter is selected. The Wichita Blessing Box map URL is replaced with "Multiple locations throughout Wichita. Online map available."
 - Calendar recurrence and grouping rules, holiday handling, and confirmation markers are recorded in docs/adr/0001-calendar-output-rules.md.
 
 UPDATES
 - Edit the Google Sheet to update resource information. Reloading the page fetches the latest sheet contents.
-- When changing the app code, publish index.html, resource-normalization.js, calendar-logic.js, and calendar-docx.js together.
+- When changing the app code, publish index.html, resource-normalization.js, calendar-logic.js, calendar-docx.js, and print-list-logic.js together.
 - Spreadsheet data changes do not require a new app deployment.
 
 FILTER BEHAVIOR

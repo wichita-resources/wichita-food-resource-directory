@@ -34,6 +34,7 @@
     if (options.spaceAfter != null) {
       properties.push('<w:spacing w:after="' + options.spaceAfter + '"/>');
     }
+    if (options.indent != null) properties.push('<w:ind w:left="' + options.indent + '"/>');
     const paragraphProperties = properties.length
       ? '<w:pPr>' + properties.join('') + '</w:pPr>'
       : '';
@@ -151,6 +152,45 @@
       '</w:sectPr></w:body></w:document>';
   }
 
+  function printableListDocumentXml(entries) {
+    if (!Array.isArray(entries)) {
+      throw new TypeError('Expected printable list entries to be an array.');
+    }
+
+    const body = paragraph('My Wichita Resource List', {
+      bold: true,
+      fontSize: 28,
+      spaceAfter: 120
+    }) + entries.map(entry => {
+      if (!entry || typeof entry.shortName !== 'string' || typeof entry.availableTimes !== 'string' ||
+        !Array.isArray(entry.details) || typeof entry.phone !== 'string' || typeof entry.website !== 'string') {
+        throw new TypeError('Expected printable list entries to contain resource details.');
+      }
+
+      const paragraphs = [
+        '<w:p><w:pPr><w:spacing w:after="50"/></w:pPr>' +
+        '<w:r><w:rPr><w:b/></w:rPr><w:t xml:space="preserve">' + xmlText(entry.shortName) + '</w:t></w:r>' +
+        '<w:r><w:t xml:space="preserve"> — ' + xmlText(entry.availableTimes) + '</w:t></w:r></w:p>',
+        ...entry.details.map(detail => {
+          if (typeof detail !== 'string') {
+            throw new TypeError('Expected printable list detail text to be a string.');
+          }
+          return paragraph(detail, { indent: 360, spaceAfter: 25 });
+        })
+      ];
+      const contact = [entry.phone, entry.website].map(value => value.trim()).filter(Boolean).join(' | ');
+      if (contact) paragraphs.push(paragraph(contact, { indent: 360, spaceAfter: 80 }));
+      return paragraphs.join('');
+    }).join('');
+
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>' +
+      body +
+      '<w:sectPr><w:pgSz w:w="12240" w:h="15840"/>' +
+      '<w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720" w:header="0" w:footer="0" w:gutter="0"/>' +
+      '</w:sectPr></w:body></w:document>';
+  }
+
   function crc32(bytes) {
     let crc = 0xffffffff;
     bytes.forEach(byte => {
@@ -220,7 +260,7 @@
     return concatBytes([...localParts, centralDirectory, end]);
   }
 
-  function createCalendarDocx(calendar) {
+  function createDocx(document) {
     const files = [
       {
         name: '[Content_Types].xml',
@@ -238,10 +278,18 @@
           '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>' +
           '</Relationships>'
       },
-      { name: 'word/document.xml', content: documentXml(calendar) }
+      { name: 'word/document.xml', content: document }
     ];
     return createZip(files);
   }
 
-  return { createCalendarDocx };
+  function createCalendarDocx(calendar) {
+    return createDocx(documentXml(calendar));
+  }
+
+  function createPrintableListDocx(entries) {
+    return createDocx(printableListDocumentXml(entries));
+  }
+
+  return { createCalendarDocx, createPrintableListDocx };
 });
