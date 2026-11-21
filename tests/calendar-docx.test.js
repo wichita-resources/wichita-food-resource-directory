@@ -28,12 +28,15 @@ test('exports the displayed calendar details in a Google Docs-compatible DOCX', 
       'Available times': 'Friday, 2:00 PM'
     })
   ], 2, new Date(2026, 10, 1));
+  calendar.months[0].translatedTitle = 'Calendario de noviembre';
+  calendar.months[0].weekdayLabels = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
   const docx = createCalendarDocx(calendar);
 
   assert.deepEqual(Array.from(docx.slice(0, 4)), [0x50, 0x4b, 0x03, 0x04]);
   const packageText = new TextDecoder().decode(docx);
   assert.match(packageText, /word\/document\.xml/);
-  assert.match(packageText, /November 2026/);
+  assert.match(packageText, /Calendario de noviembre/);
+  assert.match(packageText, /Domingo/);
   assert.match(packageText, /December 2026/);
   assert.match(packageText, /Pantry &amp; Meals/);
   assert.match(packageText, /Call before visiting/);

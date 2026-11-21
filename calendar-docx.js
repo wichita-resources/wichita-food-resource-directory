@@ -62,19 +62,23 @@
 
   function eventParagraphs(event) {
     const marker = event.needsConfirmation ? ' *' : '';
+    const title = event.translatedTitle != null ? event.translatedTitle : event.title;
+    const times = event.translatedTimes != null ? event.translatedTimes : event.times;
+    const notes = event.translatedNotes != null ? event.translatedNotes : event.notes;
     const lines = [
-      paragraph(event.title + marker, { bold: true, fontSize: 14, spaceAfter: 0 })
+      paragraph(title + marker, { bold: true, fontSize: 14, spaceAfter: 0 })
     ];
-    if (event.times.length) {
-      lines.push(paragraph(event.times.join('; '), { fontSize: 14, spaceAfter: 0 }));
+    if (times.length) {
+      lines.push(paragraph(times.join('; '), { fontSize: 14, spaceAfter: 0 }));
     }
-    event.notes.forEach(note => lines.push(paragraph(note, { fontSize: 14, spaceAfter: 0 })));
+    notes.forEach(note => lines.push(paragraph(note, { fontSize: 14, spaceAfter: 0 })));
     return lines.join('');
   }
 
   function monthTable(month) {
     const width = 2119;
-    const header = tableRow(weekdays.map(day =>
+    const weekdayLabels = month.weekdayLabels || weekdays;
+    const header = tableRow(weekdayLabels.map(day =>
       tableCell(paragraph(day, { bold: true, fontSize: 16, alignment: 'center', spaceAfter: 0 }), 'D9E2F3', width)
     ));
     const weeks = month.weeks.map(week => tableRow(week.map(cell => {
@@ -88,7 +92,7 @@
     const borders = ['top', 'left', 'bottom', 'right', 'insideH', 'insideV']
       .map(edge => '<w:' + edge + ' w:val="single" w:sz="4" w:color="AAB3C0"/>')
       .join('');
-    const grid = weekdays.map(() => '<w:gridCol w:w="' + width + '"/>').join('');
+    const grid = weekdayLabels.map(() => '<w:gridCol w:w="' + width + '"/>').join('');
     return '<w:tbl><w:tblPr><w:tblW w:w="0" w:type="auto"/>' +
       '<w:tblLayout w:type="fixed"/><w:tblBorders>' + borders + '</w:tblBorders></w:tblPr>' +
       '<w:tblGrid>' + grid + '</w:tblGrid>' + header + weeks + '</w:tbl>';
@@ -96,16 +100,20 @@
 
   function monthContent(month, falseResources, index) {
     const content = [
-      paragraph(month.title, { bold: true, fontSize: 28, pageBreakBefore: index > 0, spaceAfter: 120 }),
+      paragraph(month.translatedTitle || month.title, { bold: true, fontSize: 28, pageBreakBefore: index > 0, spaceAfter: 120 }),
       monthTable(month)
     ];
     const hasDatedEvents = month.weeks.some(week => week.some(cell => cell && cell.events.length));
     if (!hasDatedEvents && !month.undatedEvents.length) {
-      content.push(paragraph('No scheduled calendar events for this month.', { spaceAfter: 80 }));
+      content.push(paragraph(month.emptyText || 'No scheduled calendar events for this month.', { spaceAfter: 80 }));
     }
     if (month.undatedEvents.length) {
-      content.push(paragraph('Schedules to confirm', { bold: true, fontSize: 18, spaceAfter: 40 }));
+      content.push(paragraph(month.undatedTitle || 'Schedules to confirm', { bold: true, fontSize: 18, spaceAfter: 40 }));
       month.undatedEvents.forEach(event => {
+        if (event.translatedText) {
+          content.push(paragraph(event.translatedText, { fontSize: 16, spaceAfter: 30 }));
+          return;
+        }
         const title = event.title + (event.needsConfirmation ? ' *' : '');
         const details = [
           event.reasons.join(' '),
@@ -116,18 +124,22 @@
       });
     }
     if (month.hasConfirmationMarker) {
-      content.push(paragraph('* Confirm before visiting. This marks an unconfirmed schedule or holiday occurrence.', {
+      content.push(paragraph(month.confirmationText || '* Confirm before visiting. This marks an unconfirmed schedule or holiday occurrence.', {
         fontSize: 16,
         spaceAfter: 80
       }));
     }
     if (falseResources.length) {
-      content.push(paragraph('Resources not included as calendar events', {
+      content.push(paragraph(month.falseResourcesTitle || 'Resources not included as calendar events', {
         bold: true,
         fontSize: 18,
         spaceAfter: 40
       }));
       falseResources.forEach(resource => {
+        if (resource.translatedText) {
+          content.push(paragraph(resource.translatedText, { fontSize: 16, spaceAfter: 30 }));
+          return;
+        }
         const times = resource.availableTimes.length
           ? resource.availableTimes.join('; ')
           : 'Available times not specified';
@@ -152,12 +164,12 @@
       '</w:sectPr></w:body></w:document>';
   }
 
-  function printableListDocumentXml(entries) {
+  function printableListDocumentXml(entries, documentTitle) {
     if (!Array.isArray(entries)) {
       throw new TypeError('Expected printable list entries to be an array.');
     }
 
-    const body = paragraph('My Wichita Resource List', {
+    const body = paragraph(documentTitle || 'My Wichita Resource List', {
       bold: true,
       fontSize: 28,
       spaceAfter: 120
@@ -287,8 +299,8 @@
     return createDocx(documentXml(calendar));
   }
 
-  function createPrintableListDocx(entries) {
-    return createDocx(printableListDocumentXml(entries));
+  function createPrintableListDocx(entries, documentTitle) {
+    return createDocx(printableListDocumentXml(entries, documentTitle));
   }
 
   return { createCalendarDocx, createPrintableListDocx };

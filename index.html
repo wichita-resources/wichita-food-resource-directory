@@ -934,6 +934,19 @@
       font-weight: 750;
     }
 
+    .language-group {
+      flex: 1 1 100%;
+    }
+
+    html[dir="rtl"] {
+      direction: rtl;
+    }
+
+    html[dir="rtl"] .accessibility-toolbar,
+    html[dir="rtl"] .language-group {
+      direction: rtl;
+    }
+
     #googleTranslateContainer {
       position: absolute;
       width: 1px;
@@ -947,7 +960,11 @@
     }
 
     .goog-te-banner-frame,
-    .goog-te-balloon-frame {
+    .goog-te-balloon-frame,
+    iframe.goog-te-banner-frame,
+    #goog-gt-tt,
+    .goog-te-spinner-pos,
+    .VIpgJd-ZVi9od-aZ2wEe-wOHMyf {
       display: none !important;
     }
 
@@ -1270,10 +1287,20 @@
           <span id="textSizeStatus" class="text-size-status" aria-live="polite">Default</span>
         </div>
 
-        <div class="accessibility-group" role="group" aria-labelledby="languageLabel">
+        <div class="accessibility-group language-group" role="group" aria-labelledby="languageLabel">
           <span class="toolbar-label" id="languageLabel">Language</span>
           <button class="language-button" type="button" data-language="en" aria-pressed="true">English</button>
           <button class="language-button" type="button" data-language="es" aria-pressed="false">Español</button>
+          <button class="language-button" type="button" data-language="vi" aria-pressed="false">Tiếng Việt</button>
+          <button class="language-button" type="button" data-language="ar" aria-pressed="false">العربية</button>
+          <button class="language-button" type="button" data-language="lo" aria-pressed="false">ພາສາລາວ</button>
+          <button class="language-button" type="button" data-language="zh-CN" aria-pressed="false">简体中文</button>
+          <button class="language-button" type="button" data-language="zh-TW" aria-pressed="false">繁體中文</button>
+          <button class="language-button" type="button" data-language="de" aria-pressed="false">Deutsch</button>
+          <button class="language-button" type="button" data-language="tl" aria-pressed="false">Filipino</button>
+          <button class="language-button" type="button" data-language="sw" aria-pressed="false">Kiswahili</button>
+          <button class="language-button" type="button" data-language="km" aria-pressed="false">ខ្មែរ</button>
+          <button class="language-button" type="button" data-language="fr" aria-pressed="false">Français</button>
           <span id="googleTranslateContainer" aria-hidden="true"></span>
         </div>
       </section>
@@ -1810,6 +1837,99 @@
       return resources.map(resource => PrintListLogic.describeResource(resource, includeAccessibility));
     }
 
+    function getTranslatedPrintableListEntries(entries) {
+      const title = $('printListEntries').querySelector('.print-list-title');
+      const articles = Array.from($('printListEntries').querySelectorAll('.print-list-entry'));
+      const translatedEntries = entries.map((entry, index) => {
+        const article = articles[index];
+        if (!article) return entry;
+        const header = article.querySelector('.print-list-entry-header');
+        const strong = header ? header.querySelector('strong') : null;
+        const headerText = header ? header.textContent.trim() : '';
+        const shortName = strong ? strong.textContent.trim() : entry.shortName;
+        let availableTimes = entry.availableTimes;
+        if (headerText && shortName && headerText.startsWith(shortName)) {
+          availableTimes = headerText.slice(shortName.length).replace(/^\s*—\s*/, '').trim() || entry.availableTimes;
+        }
+        const details = Array.from(article.querySelectorAll('.print-list-entry-details > div'))
+          .filter(detail => !detail.classList.contains('print-list-contact'))
+          .map(detail => detail.textContent.trim())
+          .filter(Boolean);
+        return {
+          ...entry,
+          shortName,
+          availableTimes,
+          details: details.length ? details : entry.details
+        };
+      });
+      return {
+        title: title ? title.textContent.trim() : 'My Wichita Resource List',
+        entries: translatedEntries
+      };
+    }
+
+    function getTranslatedCalendar(calendar) {
+      const pages = Array.from($('calendarMonths').querySelectorAll('.calendar-month-page'));
+      const translated = JSON.parse(JSON.stringify(calendar));
+      translated.months.forEach((month, monthIndex) => {
+        const page = pages[monthIndex];
+        if (!page) return;
+        const monthTitle = page.querySelector('h3');
+        if (monthTitle) month.translatedTitle = monthTitle.textContent.trim();
+        month.weekdayLabels = Array.from(page.querySelectorAll('thead th')).map(th => th.textContent.trim()).filter(Boolean);
+        const empty = page.querySelector('.calendar-empty');
+        if (empty) month.emptyText = empty.textContent.trim();
+        const undated = page.querySelector('.calendar-undated');
+        if (undated) {
+          const undatedTitle = undated.querySelector('h4');
+          if (undatedTitle) month.undatedTitle = undatedTitle.textContent.trim();
+          const items = Array.from(undated.querySelectorAll('li'));
+          month.undatedEvents.forEach((event, eventIndex) => {
+            if (items[eventIndex]) event.translatedText = items[eventIndex].textContent.trim();
+          });
+        }
+        const legend = page.querySelector('.calendar-legend');
+        if (legend) month.confirmationText = legend.textContent.trim();
+        const falseList = page.querySelector('.calendar-false-list');
+        if (falseList) {
+          const falseTitle = falseList.querySelector('h4');
+          if (falseTitle) month.falseResourcesTitle = falseTitle.textContent.trim();
+          const items = Array.from(falseList.querySelectorAll('li'));
+          translated.falseResources.forEach((resource, resourceIndex) => {
+            if (items[resourceIndex]) resource.translatedText = items[resourceIndex].textContent.trim();
+          });
+        }
+
+        const dayCells = Array.from(page.querySelectorAll('td.calendar-day'));
+        month.weeks.forEach(week => {
+          week.forEach(cell => {
+            if (!cell) return;
+            const dayCell = dayCells.find(candidate => {
+              const number = candidate.querySelector('.calendar-day-number');
+              return number && Number(number.textContent.trim()) === cell.dayNumber;
+            });
+            if (!dayCell) return;
+            const eventItems = Array.from(dayCell.querySelectorAll('.calendar-event'));
+            cell.events.forEach((event, eventIndex) => {
+              const item = eventItems[eventIndex];
+              if (!item) return;
+              const strong = item.querySelector('strong');
+              if (strong) {
+                let title = strong.textContent.trim();
+                if (event.needsConfirmation && title.endsWith(' *')) title = title.slice(0, -2).trim();
+                event.translatedTitle = title;
+              }
+              const time = item.querySelector('.calendar-event-time');
+              if (time) event.translatedTimes = [time.textContent.trim()];
+              event.translatedNotes = Array.from(item.querySelectorAll('.calendar-event-note'))
+                .map(note => note.textContent.trim()).filter(Boolean);
+            });
+          });
+        });
+      });
+      return translated;
+    }
+
     function renderPrintableList() {
       const entries = getPrintableListEntries();
       $('printListEntries').innerHTML =
@@ -1962,8 +2082,11 @@
     $('printCalendarButton').addEventListener('click', () => window.print());
     $('printListButton').addEventListener('click', () => window.print());
     $('exportListDocButton').addEventListener('click', () => {
-      try {
-        const documentBytes = CalendarDocx.createPrintableListDocx(getPrintableListEntries());
+      const exportPrintableList = () => {
+        try {
+        const entries = getPrintableListEntries();
+        const translated = getTranslatedPrintableListEntries(entries);
+        const documentBytes = CalendarDocx.createPrintableListDocx(translated.entries, translated.title);
         const today = new Date();
         const date = [
           today.getFullYear(),
@@ -1983,11 +2106,19 @@
         console.error('Could not export the printable resource list.', error);
         window.alert('Could not export the printable resource list. Please try again.');
       }
+      };
+      const language = readStoredValue(LANGUAGE_STORAGE_KEY) || 'en';
+      setGoogleTranslateLanguage(language);
+      window.setTimeout(exportPrintableList, 350);
     });
     $('exportCalendarDocButton').addEventListener('click', () => {
-      try {
-        const calendar = renderCalendar();
-        const documentBytes = CalendarDocx.createCalendarDocx(calendar);
+      const exportCalendar = () => {
+        try {
+        const monthCount = Number($('calendarMonthCount').value);
+        const selectedRows = allCalendarRows.filter(row => selectedResourceIds.has(getSelectionId(row)));
+        const calendar = CalendarLogic.buildCalendar(selectedRows, monthCount, new Date());
+        const translatedCalendar = getTranslatedCalendar(calendar);
+        const documentBytes = CalendarDocx.createCalendarDocx(translatedCalendar);
         const firstMonth = calendar.months[0];
         const filename = 'food-resource-calendar-' + firstMonth.year + '-' +
           String(firstMonth.month + 1).padStart(2, '0') + '.docx';
@@ -2003,6 +2134,10 @@
         console.error('Could not export the calendar document.', error);
         window.alert('Could not export the calendar document. Please try again.');
       }
+      };
+      const language = readStoredValue(LANGUAGE_STORAGE_KEY) || 'en';
+      setGoogleTranslateLanguage(language);
+      window.setTimeout(exportCalendar, 350);
     });
 
     $('backToSelectionButton').addEventListener('click', () => {
@@ -2076,6 +2211,7 @@
     const TEXT_SIZE_STORAGE_KEY = 'wichitaDirectoryTextScale';
     const TEXT_SIZES = [0.875, 1, 1.125, 1.25];
     const LANGUAGE_STORAGE_KEY = 'wichitaDirectoryLanguage';
+    const SUPPORTED_LANGUAGES = ['en', 'es', 'vi', 'ar', 'lo', 'zh-CN', 'zh-TW', 'de', 'tl', 'sw', 'km', 'fr'];
 
     function readStoredValue(key) {
       try { return localStorage.getItem(key); } catch (error) { return null; }
@@ -2132,9 +2268,8 @@
 
     function setGoogleTranslateCookie(language) {
       clearGoogleTranslateCookies();
-      if (language === 'es') {
-        document.cookie = 'googtrans=/en/es; path=/';
-      }
+      if (language === 'en') return;
+      document.cookie = 'googtrans=/en/' + language + '; path=/';
     }
 
     function setGoogleTranslateLanguage(language) {
@@ -2148,11 +2283,13 @@
     }
 
     function applyLanguage(language) {
-      const validLanguage = language === 'es' ? 'es' : 'en';
+      const validLanguage = SUPPORTED_LANGUAGES.includes(language) ? language : 'en';
 
       document.querySelectorAll('[data-language]').forEach(button => {
         button.setAttribute('aria-pressed', String(button.dataset.language === validLanguage));
       });
+      document.documentElement.lang = validLanguage;
+      document.documentElement.dir = validLanguage === 'ar' ? 'rtl' : 'ltr';
       updateAreaLabels(validLanguage);
       storeValue(LANGUAGE_STORAGE_KEY, validLanguage);
       if (typeof allResources !== 'undefined' && allResources.length) render();
@@ -2165,17 +2302,27 @@
 
     const WICHITA_AREA_LABELS = {
       en: { NE: 'NE', NW: 'NW', SE: 'SE', SW: 'SW', Central: 'Central' },
-      es: { NE: 'NE', NW: 'NO', SE: 'SE', SW: 'SO', Central: 'Centro' }
+      es: { NE: 'NE', NW: 'NO', SE: 'SE', SW: 'SO', Central: 'Centro' },
+      vi: { NE: 'Đông Bắc', NW: 'Tây Bắc', SE: 'Đông Nam', SW: 'Tây Nam', Central: 'Trung tâm' },
+      ar: { NE: 'شمال شرق', NW: 'شمال غرب', SE: 'جنوب شرق', SW: 'جنوب غرب', Central: 'الوسط' },
+      lo: { NE: 'ຕາເວັນອອກສຽງເໜືອ', NW: 'ຕາເວັນຕົກສຽງເໜືອ', SE: 'ຕາເວັນອອກສຽງໃຕ້', SW: 'ຕາເວັນຕົກສຽງໃຕ້', Central: 'ກາງ' },
+      'zh-CN': { NE: '东北', NW: '西北', SE: '东南', SW: '西南', Central: '中部' },
+      'zh-TW': { NE: '東北', NW: '西北', SE: '東南', SW: '西南', Central: '中部' },
+      de: { NE: 'Nordosten', NW: 'Nordwesten', SE: 'Südosten', SW: 'Südwesten', Central: 'Zentrum' },
+      tl: { NE: 'Hilagang Silangan', NW: 'Hilagang Kanluran', SE: 'Timog Silangan', SW: 'Timog Kanluran', Central: 'Gitna' },
+      sw: { NE: 'Kaskazini Mashariki', NW: 'Kaskazini Magharibi', SE: 'Kusini Mashariki', SW: 'Kusini Magharibi', Central: 'Kati' },
+      km: { NE: 'ភាគឥសាន', NW: 'ភាគពាយព្យ', SE: 'ភាគអាគ្នេយ៍', SW: 'ភាគនិរតី', Central: 'កណ្តាល' },
+      fr: { NE: 'Nord-est', NW: 'Nord-ouest', SE: 'Sud-est', SW: 'Sud-ouest', Central: 'Centre' }
     };
 
     function displayAreaName(area, language) {
-      const lang = language === 'es' ? 'es' : 'en';
+      const lang = WICHITA_AREA_LABELS[language] ? language : 'en';
       const cleanArea = clean(area);
       return WICHITA_AREA_LABELS[lang][cleanArea] || cleanArea;
     }
 
     function updateAreaLabels(language) {
-      const lang = language === 'es' ? 'es' : 'en';
+      const lang = WICHITA_AREA_LABELS[language] ? language : 'en';
       document.querySelectorAll('[data-area-code]').forEach(label => {
         label.textContent = WICHITA_AREA_LABELS[lang][label.dataset.areaCode] || label.dataset.areaCode;
       });
@@ -2195,7 +2342,7 @@
       if (typeof google === 'undefined' || !google.translate) return;
       new google.translate.TranslateElement({
         pageLanguage: 'en',
-        includedLanguages: 'en,es',
+        includedLanguages: 'en,es,vi,ar,lo,zh-CN,zh-TW,de,tl,sw,km,fr',
         autoDisplay: false
       }, 'googleTranslateContainer');
 
@@ -2224,6 +2371,9 @@
     applyTheme(readStoredValue(THEME_STORAGE_KEY) || 'dark');
     applyTextScale(readStoredValue(TEXT_SIZE_STORAGE_KEY) || 1);
     applyLanguage(readStoredValue(LANGUAGE_STORAGE_KEY) || 'en');
+    window.addEventListener('beforeprint', () => {
+      applyLanguage(readStoredValue(LANGUAGE_STORAGE_KEY) || 'en');
+    });
 
     function parseGvizResponse(text) {
       const start = text.indexOf('{');

@@ -29,3 +29,16 @@ test('rejects invalid printable-list document data explicitly', () => {
   assert.throws(() => createPrintableListDocx(null), TypeError);
   assert.throws(() => createPrintableListDocx([{}]), TypeError);
 });
+
+test('uses a provided translated printable-list title', () => {
+  const docx = createPrintableListDocx([{
+    shortName: 'Pantry',
+    availableTimes: 'lunes',
+    details: ['Despensa de alimentos'],
+    phone: '',
+    website: ''
+  }], 'Mi lista de recursos');
+
+  assert.match(new TextDecoder().decode(docx), /Mi lista de recursos/);
+  assert.match(new TextDecoder().decode(docx), /Despensa de alimentos/);
+});
